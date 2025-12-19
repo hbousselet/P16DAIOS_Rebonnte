@@ -7,8 +7,10 @@ class MedicineStockViewModel: ObservableObject {
     @Published var history: [HistoryEntry] = []
     private var db = Firestore.firestore()
 
+    private var firestoreService: FirestoreService = FirestoreService()
+
     func fetchMedicines() async {
-        for await medecine in FirestoreService.medicines {
+        for await medecine in firestoreService.medicines {
             medicines.append(contentsOf: medecine)
             aisles = Array(Set(medicines.map { $0.aisle })).sorted()
         }

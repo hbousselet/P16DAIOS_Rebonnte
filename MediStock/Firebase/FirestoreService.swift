@@ -12,21 +12,26 @@ class FirestoreService {
     private var db = Firestore.firestore()
     var medicineHandler: (([Medicine]) -> Void)?
 
-    static var medicines: AsyncStream<[Medicine]> {
+    var medicineDBlistener: ListenerRegistration?
+
+    init(db: Firestore = Firestore.firestore()) {
+        self.db = db
+    }
+
+    var medicines: AsyncStream<[Medicine]> {
         AsyncStream { continuation in
-            let service = FirestoreService()
-            service.medicineHandler = { medicine in
+            medicineHandler = { medicine in
                 continuation.yield(medicine)
             }
             continuation.onTermination = { @Sendable _ in
-                // remove listener
+                self.medicineDBlistener?.remove()
             }
-            service.fetch()
+            createListenerOnMedicineDB()
         }
     }
 
-    func fetch() {
-        db.collection("medicines").addSnapshotListener { (querySnapshot, error) in
+    func createListenerOnMedicineDB() {
+        medicineDBlistener = db.collection("medicines").addSnapshotListener { (querySnapshot, error) in
             if let error = error {
                 print("Error getting documents: \(error)")
             } else {
