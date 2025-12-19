@@ -10,20 +10,7 @@ class MedicineStockViewModel: ObservableObject {
     func fetchMedicines() async {
         for await medecine in FirestoreService.medicines {
             medicines.append(contentsOf: medecine)
-        }
-
-    }
-
-    func fetchAisles() {
-        db.collection("medicines").addSnapshotListener { (querySnapshot, error) in
-            if let error = error {
-                print("Error getting documents: \(error)")
-            } else {
-                let allMedicines = querySnapshot?.documents.compactMap { document in
-                    try? document.data(as: Medicine.self)
-                } ?? []
-                self.aisles = Array(Set(allMedicines.map { $0.aisle })).sorted()
-            }
+            aisles = Array(Set(medicines.map { $0.aisle })).sorted()
         }
     }
 
