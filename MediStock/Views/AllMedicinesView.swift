@@ -48,7 +48,9 @@ struct AllMedicinesView: View {
             }
         }
         .onAppear {
-            viewModel.fetchMedicines()
+            Task(priority: .background) {
+                await viewModel.fetchMedicines()
+            }
         }
     }
     
