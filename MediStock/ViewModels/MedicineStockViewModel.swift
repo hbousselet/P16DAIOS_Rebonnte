@@ -7,16 +7,11 @@ class MedicineStockViewModel: ObservableObject {
     @Published var history: [HistoryEntry] = []
     private var db = Firestore.firestore()
 
-    func fetchMedicines() {
-        db.collection("medicines").addSnapshotListener { (querySnapshot, error) in
-            if let error = error {
-                print("Error getting documents: \(error)")
-            } else {
-                self.medicines = querySnapshot?.documents.compactMap { document in
-                    try? document.data(as: Medicine.self)
-                } ?? []
-            }
+    func fetchMedicines() async {
+        for await medecine in FirestoreService.medicines {
+            medicines.append(contentsOf: medecine)
         }
+
     }
 
     func fetchAisles() {

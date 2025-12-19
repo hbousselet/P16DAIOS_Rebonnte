@@ -18,6 +18,11 @@ struct AisleListView: View {
             }) {
                 Image(systemName: "plus")
             })
+            .navigationBarItems(leading: Button(action: {
+                //
+            }) {
+                Image(systemName: "person.crop.circle.fill.badge.minus")
+            })
         }
         .onAppear {
             viewModel.fetchAisles()
