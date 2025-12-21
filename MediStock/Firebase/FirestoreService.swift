@@ -57,8 +57,16 @@ extension FirestoreService {
     func updateStock(_ medicine: Medicine, by amount: Int, user: String) async throws {
         guard let id = medicine.id else { return }
         let newStock = medicine.stock + amount
-         return try await db.collection("medicines").document(id).updateData([
+         try await db.collection("medicines").document(id).updateData([
             "stock": newStock
         ])
+    }
+}
+
+// MARK: Update Medicine
+extension FirestoreService {
+    func updateMedicine(_ medicine: Medicine, user: String) async throws {
+        guard let id = medicine.id else { return }
+        try await  db.collection("medicines").document(id).setData(medicine.dictionary)
     }
 }

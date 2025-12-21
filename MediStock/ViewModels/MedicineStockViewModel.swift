@@ -54,10 +54,10 @@ class MedicineStockViewModel: ObservableObject {
         }
     }
 
-    func updateMedicine(_ medicine: Medicine, user: String) {
+    func updateMedicine(_ medicine: Medicine, user: String) async {
         guard let id = medicine.id else { return }
         do {
-            try db.collection("medicines").document(id).setData(from: medicine)
+            try await firestoreService.updateMedicine(medicine, user: user)
             addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
         } catch let error {
             print("Error updating document: \(error)")
