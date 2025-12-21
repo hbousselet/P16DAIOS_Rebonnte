@@ -16,11 +16,11 @@ class MedicineStockViewModel: ObservableObject {
         }
     }
 
-    func addRandomMedicine(user: String) {
+    func addRandomMedicine(user: String) async {
         let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
         do {
             try db.collection("medicines").document(medicine.id ?? UUID().uuidString).setData(from: medicine)
-            addHistory(action: "Added \(medicine.name)", user: user, medicineId: medicine.id ?? "", details: "Added new medicine")
+            try await firestoreService.addHistory(action: "Added \(medicine.name)", user: user, medicineId: medicine.id ?? "", details: "Added new medicine")
         } catch let error {
             print("Error adding document: \(error)")
         }
@@ -48,7 +48,7 @@ class MedicineStockViewModel: ObservableObject {
             if let index = self.medicines.firstIndex(where: { $0.id == id }) {
                 self.medicines[index].stock = newStock
             }
-            self.addHistory(action: "\(amount > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(amount)", user: user, medicineId: id, details: "Stock changed from \(medicine.stock - amount) to \(newStock)")
+            try await firestoreService.addHistory(action: "\(amount > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(amount)", user: user, medicineId: id, details: "Stock changed from \(medicine.stock - amount) to \(newStock)")
         } catch {
             print("Error updating stock: \(error)")
         }
@@ -58,18 +58,9 @@ class MedicineStockViewModel: ObservableObject {
         guard let id = medicine.id else { return }
         do {
             try await firestoreService.updateMedicine(medicine, user: user)
-            addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
+            try await firestoreService.addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
         } catch let error {
             print("Error updating document: \(error)")
-        }
-    }
-
-    private func addHistory(action: String, user: String, medicineId: String, details: String) {
-        let history = HistoryEntry(medicineId: medicineId, user: user, action: action, details: details)
-        do {
-            try db.collection("history").document(history.id ?? UUID().uuidString).setData(from: history)
-        } catch let error {
-            print("Error adding history: \(error)")
         }
     }
 

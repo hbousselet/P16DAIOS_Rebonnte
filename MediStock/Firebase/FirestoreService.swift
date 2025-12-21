@@ -70,3 +70,11 @@ extension FirestoreService {
         try await  db.collection("medicines").document(id).setData(medicine.dictionary)
     }
 }
+
+// MARK: Add history
+extension FirestoreService {
+    func addHistory(action: String, user: String, medicineId: String, details: String) async throws {
+        let history = HistoryEntry(medicineId: medicineId, user: user, action: action, details: details)
+        try await db.collection("history").document(history.id ?? UUID().uuidString).setData(history.dictionary)
+    }
+}
