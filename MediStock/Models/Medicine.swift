@@ -16,8 +16,15 @@ struct Medicine: Identifiable, Codable, Equatable {
 
     static func == (lhs: Medicine, rhs: Medicine) -> Bool {
         return lhs.id == rhs.id &&
-               lhs.name == rhs.name &&
-               lhs.stock == rhs.stock &&
-               lhs.aisle == rhs.aisle
+        lhs.name == rhs.name &&
+        lhs.stock == rhs.stock &&
+        lhs.aisle == rhs.aisle
+    }
+
+    var dictionary: [String: Any] {
+        let dict = ["name": name,
+                    "stock": stock,
+                    "aisle": aisle] as [String : Any]
+        return dict.compactMapValues { $0 }
     }
 }
