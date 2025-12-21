@@ -43,3 +43,22 @@ class FirestoreService {
         }
     }
 }
+
+// MARK: Delete
+
+extension FirestoreService {
+    func delete(id: String) async throws {
+        try await db.collection("medicines").document(id).delete()
+    }
+}
+
+// MARK: Update stock
+extension FirestoreService {
+    func updateStock(_ medicine: Medicine, by amount: Int, user: String) async throws {
+        guard let id = medicine.id else { return }
+        let newStock = medicine.stock + amount
+         return try await db.collection("medicines").document(id).updateData([
+            "stock": newStock
+        ])
+    }
+}

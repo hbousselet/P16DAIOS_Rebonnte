@@ -26,40 +26,31 @@ class MedicineStockViewModel: ObservableObject {
         }
     }
 
-    func deleteMedicines(at offsets: IndexSet) {
-        offsets.map { medicines[$0] }.forEach { medicine in
-            if let id = medicine.id {
-                db.collection("medicines").document(id).delete { error in
-                    if let error = error {
-                        print("Error removing document: \(error)")
-                    }
-                }
-            }
-        }
+    func deleteMedicines(at offsets: IndexSet) async {
+//        offsets.map { medicines[$0] }.forEach { medicine in
+//            if let id = medicine.id {
+//                do {
+//                    try await firestoreService.delete(id: id)
+//                } catch {
+//                    
+//                }
+//
+//            }
+//        }
     }
 
-    func increaseStock(_ medicine: Medicine, user: String) {
-        updateStock(medicine, by: 1, user: user)
-    }
-
-    func decreaseStock(_ medicine: Medicine, user: String) {
-        updateStock(medicine, by: -1, user: user)
-    }
-
-    private func updateStock(_ medicine: Medicine, by amount: Int, user: String) {
+    func updateStok(_ medicine: Medicine, user: String, increase: Bool) async {
         guard let id = medicine.id else { return }
-        let newStock = medicine.stock + amount
-        db.collection("medicines").document(id).updateData([
-            "stock": newStock
-        ]) { error in
-            if let error = error {
-                print("Error updating stock: \(error)")
-            } else {
-                if let index = self.medicines.firstIndex(where: { $0.id == id }) {
-                    self.medicines[index].stock = newStock
-                }
-                self.addHistory(action: "\(amount > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(amount)", user: user, medicineId: id, details: "Stock changed from \(medicine.stock - amount) to \(newStock)")
+        let amount: Int = increase ? 1 : -1
+        do {
+            let newStock = medicine.stock + amount
+            try await firestoreService.updateStock(medicine, by: 1, user: user)
+            if let index = self.medicines.firstIndex(where: { $0.id == id }) {
+                self.medicines[index].stock = newStock
             }
+            self.addHistory(action: "\(amount > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(amount)", user: user, medicineId: id, details: "Stock changed from \(medicine.stock - amount) to \(newStock)")
+        } catch {
+            print("Error updating stock: \(error)")
         }
     }
 
