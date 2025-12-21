@@ -17,4 +17,14 @@ struct HistoryEntry: Identifiable, Codable {
         self.details = details
         self.timestamp = timestamp
     }
+
+    var dictionary: [String: Any] {
+        let dict = ["medicine_id": medicineId,
+                    "user": user,
+                    "action": action,
+                    "details": details,
+                    "timestamp": timestamp
+        ] as [String : Any]
+        return dict.compactMapValues { $0 }
+    }
 }
