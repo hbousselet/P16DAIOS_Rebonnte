@@ -9,11 +9,23 @@ class MedicineStockViewModel: ObservableObject {
 
     private var firestoreService: FirestoreService = FirestoreService()
 
+    @MainActor
     func fetchMedicines() async {
         for await medecine in firestoreService.medicines {
             medicines.append(contentsOf: medecine)
             aisles = Array(Set(medicines.map { $0.aisle })).sorted()
         }
+    }
+
+    func fetchHistory(for medicine: Medicine) async {
+        guard let medicineId = medicine.id else { return }
+        for await historyEntry in firestoreService.createListenerOnMedicineHistoryEntryDB(medicineId: medicineId) {
+            history.append(contentsOf: historyEntry)
+        }
+    }
+
+    func removeHistoryListener() {
+
     }
 
     func addRandomMedicine(user: String) async {
@@ -61,19 +73,6 @@ class MedicineStockViewModel: ObservableObject {
             try await firestoreService.addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
         } catch let error {
             print("Error updating document: \(error)")
-        }
-    }
-
-    func fetchHistory(for medicine: Medicine) {
-        guard let medicineId = medicine.id else { return }
-        db.collection("history").whereField("medicineId", isEqualTo: medicineId).addSnapshotListener { (querySnapshot, error) in
-            if let error = error {
-                print("Error getting history: \(error)")
-            } else {
-                self.history = querySnapshot?.documents.compactMap { document in
-                    try? document.data(as: HistoryEntry.self)
-                } ?? []
-            }
         }
     }
 }

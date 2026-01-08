@@ -14,7 +14,9 @@ struct AisleListView: View {
             }
             .navigationBarTitle("Aisles")
             .navigationBarItems(trailing: Button(action: {
-                viewModel.addRandomMedicine(user: "test_user") // Remplacez par l'utilisateur actuel
+                Task {
+                    await viewModel.addRandomMedicine(user: "test_user") // Remplacez par l'utilisateur actuel
+                }
             }) {
                 Image(systemName: "plus")
             })
@@ -25,7 +27,9 @@ struct AisleListView: View {
             })
         }
         .onAppear {
-            viewModel.fetchAisles()
+            Task {
+                await viewModel.fetchMedicines()
+            }
         }
     }
 }

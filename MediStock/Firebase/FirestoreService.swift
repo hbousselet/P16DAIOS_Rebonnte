@@ -11,8 +11,10 @@ import Firebase
 class FirestoreService {
     private var db = Firestore.firestore()
     var medicineHandler: (([Medicine]) -> Void)?
+    var medicineHistoryEntryHandler: (([HistoryEntry]) -> Void)?
 
     var medicineDBlistener: ListenerRegistration?
+    var medicineHistoryEntryDBlistener: ListenerRegistration?
 
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
@@ -25,7 +27,7 @@ class FirestoreService {
             }
             continuation.onTermination = { @Sendable _ in
                 self.medicineDBlistener?.remove()
-            }
+            } // closure qui s'assure que l'on vient renvoyer des données de maniere thread safe
             createListenerOnMedicineDB()
         }
     }
@@ -42,6 +44,27 @@ class FirestoreService {
             }
         }
     }
+
+    func createListenerOnMedicineHistoryEntryDB(medicineId: String) -> AsyncStream<[HistoryEntry]> {
+        AsyncStream { continuation in
+            medicineHistoryEntryHandler = { history in
+                continuation.yield(history)
+            }
+            continuation.onTermination = { @Sendable _ in
+                self.medicineHistoryEntryDBlistener?.remove()
+            }
+            medicineHistoryEntryDBlistener = db.collection("history").whereField("medicineId", isEqualTo: medicineId).addSnapshotListener { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting history: \(error)")
+                } else {
+                    let _ = querySnapshot?.documents.compactMap { document in
+                        return try? document.data(as: HistoryEntry.self)
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 // MARK: Delete
@@ -77,4 +100,9 @@ extension FirestoreService {
         let history = HistoryEntry(medicineId: medicineId, user: user, action: action, details: details)
         try await db.collection("history").document(history.id ?? UUID().uuidString).setData(history.dictionary)
     }
+}
+
+// MARK: Fetch history
+extension FirestoreService {
+    
 }
