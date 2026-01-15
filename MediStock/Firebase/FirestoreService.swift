@@ -8,79 +8,113 @@
 import Foundation
 import Firebase
 
-class FirestoreService {
-    private var db = Firestore.firestore()
-    var medicineHandler: (([Medicine]) -> Void)?
-    var medicineHistoryEntryHandler: (([HistoryEntry]) -> Void)?
+// créer un protocol pour FirestoreService
+// créer un enum pour les erreurs
+// remove la variable medicines
+// mieux hierarchiser cette classe
+// mettre FirestoreService en actor ?
 
-    var medicineDBlistener: ListenerRegistration?
-    var medicineHistoryEntryDBlistener: ListenerRegistration?
+enum CollectionReference: String {
+    case medicines, history
+
+    var id: String {
+        switch self {
+        case .medicines: return "medicineId"
+        case .history: return "historyId"
+        }
+    }
+}
+
+protocol FirestoreProtocol {
+    func stream<T: Decodable & Sendable>(
+        reference: CollectionReference,
+        element: String?
+    ) -> AsyncStream<[T]>
+    func delete(id: String) async throws
+    func update(model: ModelProtocol, reference: CollectionReference) async throws
+}
+
+class FirestoreService: FirestoreProtocol {
+    private var db: Firestore
 
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
     }
 
-    var medicines: AsyncStream<[Medicine]> {
+    public func stream<T: Decodable & Sendable>(
+        reference: CollectionReference,
+        element: String? = nil
+    ) -> AsyncStream<[T]> {
         AsyncStream { continuation in
-            medicineHandler = { medicine in
-                continuation.yield(medicine)
+            let listenerRegistration = self.listener(
+                for: T.self,
+                reference: reference,
+                element: element
+            ) { items in
+                continuation.yield(items)
             }
+            
             continuation.onTermination = { @Sendable _ in
-                self.medicineDBlistener?.remove()
-            } // closure qui s'assure que l'on vient renvoyer des données de maniere thread safe
-            createListenerOnMedicineDB()
-        }
-    }
-
-    func createListenerOnMedicineDB() {
-        medicineDBlistener = db.collection("medicines").addSnapshotListener { (querySnapshot, error) in
-            if let error = error {
-                print("Error getting documents: \(error)")
-            } else {
-                let medecines: [Medicine] = querySnapshot?.documents.compactMap { document in
-                    try? document.data(as: Medicine.self)
-                } ?? []
-                self.medicineHandler?(medecines)
+                listenerRegistration.remove()
             }
         }
     }
 
-    func createListenerOnMedicineHistoryEntryDB(medicineId: String) -> AsyncStream<[HistoryEntry]> {
-        AsyncStream { continuation in
-            medicineHistoryEntryHandler = { history in
-                continuation.yield(history)
-            }
-            continuation.onTermination = { @Sendable _ in
-                self.medicineHistoryEntryDBlistener?.remove()
-            }
-            medicineHistoryEntryDBlistener = db.collection("history").whereField("medicineId", isEqualTo: medicineId).addSnapshotListener { (querySnapshot, error) in
-                if let error = error {
-                    print("Error getting history: \(error)")
-                } else {
-                    let _ = querySnapshot?.documents.compactMap { document in
-                        return try? document.data(as: HistoryEntry.self)
+    private func listener<T: Decodable>(
+        for type: T.Type,
+        reference: CollectionReference,
+        element: String? = nil,
+        handler: @escaping ([T]) -> Void
+    ) -> ListenerRegistration {
+        if let element {
+            return db.collection(reference.rawValue)
+                .whereField(reference.id, isEqualTo: element)
+                .addSnapshotListener { (querySnapshot, error) in
+                    if let error = error {
+                        print("Error getting documents: \(error)")
+                        handler([])
+                    } else {
+                        let items = querySnapshot?.documents.compactMap { document in
+                            return try? document.data(as: T.self)
+                        } ?? []
+                        handler(items)
                     }
                 }
-            }
+        } else {
+            return db.collection(reference.rawValue)
+                .addSnapshotListener { (querySnapshot, error) in
+                    if let error = error {
+                        print("Error getting documents: \(error)")
+                        handler([])
+                    } else {
+                        let items = querySnapshot?.documents.compactMap { document in
+                            return try? document.data(as: T.self)
+                        } ?? []
+                        handler(items)
+                    }
+                }
         }
     }
+    
+    func update(model: any ModelProtocol, reference: CollectionReference) async throws {
+        guard let id = model.id else { return }
+        try await db.collection(reference.rawValue).document(id)
+            .setData(model.dictionary)
+    }
 
-}
-
-// MARK: Delete
-
-extension FirestoreService {
-    func delete(id: String) async throws {
-        try await db.collection("medicines").document(id).delete()
+    public func delete(id: String) async throws {
+        try await db.collection("medicines").document(id)
+            .delete()
     }
 }
 
 // MARK: Update stock
 extension FirestoreService {
-    func updateStock(_ medicine: Medicine, by amount: Int, user: String) async throws {
+    public func updateStock(_ medicine: Medicine, by amount: Int, user: String) async throws {
         guard let id = medicine.id else { return }
         let newStock = medicine.stock + amount
-         try await db.collection("medicines").document(id).updateData([
+         try await db.collection("medicines").document(id)
+            .updateData([
             "stock": newStock
         ])
     }
@@ -88,21 +122,22 @@ extension FirestoreService {
 
 // MARK: Update Medicine
 extension FirestoreService {
-    func updateMedicine(_ medicine: Medicine, user: String) async throws {
+    public func updateMedicine(_ medicine: Medicine, user: String) async throws {
         guard let id = medicine.id else { return }
-        try await  db.collection("medicines").document(id).setData(medicine.dictionary)
+        try await  db.collection("medicines").document(id)
+            .setData(medicine.dictionary)
     }
 }
 
 // MARK: Add history
 extension FirestoreService {
-    func addHistory(action: String, user: String, medicineId: String, details: String) async throws {
+    public func addHistory(action: String, user: String, medicineId: String, details: String) async throws {
         let history = HistoryEntry(medicineId: medicineId, user: user, action: action, details: details)
-        try await db.collection("history").document(history.id ?? UUID().uuidString).setData(history.dictionary)
+        try await db.collection("history").document(history.id ?? UUID().uuidString)
+            .setData(history.dictionary)
     }
 }
 
 // MARK: Fetch history
 extension FirestoreService {
-    
 }

@@ -11,15 +11,16 @@ class MedicineStockViewModel: ObservableObject {
 
     @MainActor
     func fetchMedicines() async {
-        for await medecine in firestoreService.medicines {
-            medicines.append(contentsOf: medecine)
+        for await medicine: [Medicine] in firestoreService.stream(reference: .medicines) {
+            print("medicine received : \(medicine)")
+            medicines = medicine
             aisles = Array(Set(medicines.map { $0.aisle })).sorted()
         }
     }
 
     func fetchHistory(for medicine: Medicine) async {
         guard let medicineId = medicine.id else { return }
-        for await historyEntry in firestoreService.createListenerOnMedicineHistoryEntryDB(medicineId: medicineId) {
+        for await historyEntry: [HistoryEntry] in firestoreService.stream(reference: .history, element: medicineId) {
             history.append(contentsOf: historyEntry)
         }
     }
@@ -51,9 +52,9 @@ class MedicineStockViewModel: ObservableObject {
 //        }
     }
 
-    func updateStok(_ medicine: Medicine, user: String, increase: Bool) async {
+    func updateStock(_ medicine: Medicine, user: String, increase: Bool) async {
         guard let id = medicine.id else { return }
-        let amount: Int = increase ? 1 : -1
+        let amount: Int = increase ? 1 : -1 // bof trouver autre chose, principe SOLID à revoir et à appliquer
         do {
             let newStock = medicine.stock + amount
             try await firestoreService.updateStock(medicine, by: 1, user: user)

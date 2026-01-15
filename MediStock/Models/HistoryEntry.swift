@@ -1,7 +1,7 @@
 import Foundation
 import FirebaseFirestoreSwift
 
-struct HistoryEntry: Identifiable, Codable {
+struct HistoryEntry: Identifiable, Codable, ModelProtocol {
     @DocumentID var id: String?
     var medicineId: String
     var user: String

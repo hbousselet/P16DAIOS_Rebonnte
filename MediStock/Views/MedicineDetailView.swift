@@ -68,7 +68,7 @@ extension MedicineDetailView {
             HStack {
                 Button(action: {
                     Task {
-                        await viewModel.updateStok(medicine, user: session.session?.uid ?? "", increase: false)
+                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: false)
                     }
                 }) {
                     Image(systemName: "minus.circle")
@@ -86,7 +86,7 @@ extension MedicineDetailView {
                 .frame(width: 100)
                 Button(action: {
                     Task {
-                        await viewModel.updateStok(medicine, user: session.session?.uid ?? "", increase: true)
+                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: true)
                     }
                 }) {
                     Image(systemName: "plus.circle")
