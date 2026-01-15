@@ -137,7 +137,3 @@ extension FirestoreService {
             .setData(history.dictionary)
     }
 }
-
-// MARK: Fetch history
-extension FirestoreService {
-}

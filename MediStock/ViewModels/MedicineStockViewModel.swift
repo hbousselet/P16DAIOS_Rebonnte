@@ -52,19 +52,25 @@ class MedicineStockViewModel: ObservableObject {
 //        }
     }
 
-    func updateStock(_ medicine: Medicine, user: String, increase: Bool) async {
-        guard let id = medicine.id else { return }
-        let amount: Int = increase ? 1 : -1 // bof trouver autre chose, principe SOLID à revoir et à appliquer
+    func updateStock(by value: Int, for medicine: Medicine, and user: String) async {
+        guard let id = medicine.id,
+            let index = medicines.firstIndex(where: { $0.id == id }) else { return }
+        var updatedMedicine = medicine // keep the source of truth from the server
+        updatedMedicine.stock += value
         do {
-            let newStock = medicine.stock + amount
-            try await firestoreService.updateStock(medicine, by: 1, user: user)
-            if let index = self.medicines.firstIndex(where: { $0.id == id }) {
-                self.medicines[index].stock = newStock
-            }
-            try await firestoreService.addHistory(action: "\(amount > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(amount)", user: user, medicineId: id, details: "Stock changed from \(medicine.stock - amount) to \(newStock)")
+            try? await firestoreService.update(model: updatedMedicine, reference: .medicines)
+            guard let newHistory = await prepareHistory(by: value, id: id, for: medicines[index], and: user) else { return }
+            try await firestoreService.update(model: newHistory, reference: .history)
         } catch {
-            print("Error updating stock: \(error)")
-        }
+
+            }
+    }
+
+    private func prepareHistory(by value: Int, id: String, for medicine: Medicine, and user: String) async -> HistoryEntry? {
+        return HistoryEntry(medicineId: id,
+                     user: user,
+                     action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
+                     details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
     }
 
     func updateMedicine(_ medicine: Medicine, user: String) async {
