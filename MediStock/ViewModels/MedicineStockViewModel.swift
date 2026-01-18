@@ -5,51 +5,34 @@ class MedicineStockViewModel: ObservableObject {
     @Published var medicines: [Medicine] = []
     @Published var aisles: [String] = []
     @Published var history: [HistoryEntry] = []
-    private var db = Firestore.firestore()
+    @Published var alert: String?
+    @Published var presentAlert: Bool = false
 
     private var firestoreService: FirestoreService = FirestoreService()
 
     @MainActor
     func fetchMedicines() async {
-        for await medicine: [Medicine] in firestoreService.stream(reference: .medicines) {
-            print("medicine received : \(medicine)")
-            medicines = medicine
-            aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+        do {
+            for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines) {
+                medicines = medicine
+                aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+            }
+        } catch {
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
         }
     }
 
     func fetchHistory(for medicine: Medicine) async {
         guard let medicineId = medicine.id else { return }
-        for await historyEntry: [HistoryEntry] in firestoreService.stream(reference: .history, element: medicineId) {
-            history.append(contentsOf: historyEntry)
-        }
-    }
-
-    func removeHistoryListener() {
-
-    }
-
-    func addRandomMedicine(user: String) async {
-        let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
         do {
-            try db.collection("medicines").document(medicine.id ?? UUID().uuidString).setData(from: medicine)
-            try await firestoreService.addHistory(action: "Added \(medicine.name)", user: user, medicineId: medicine.id ?? "", details: "Added new medicine")
-        } catch let error {
-            print("Error adding document: \(error)")
+            for try await historyEntry: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicineId) {
+                history.append(contentsOf: historyEntry)
+            }
+        } catch {
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
         }
-    }
-
-    func deleteMedicines(at offsets: IndexSet) async {
-//        offsets.map { medicines[$0] }.forEach { medicine in
-//            if let id = medicine.id {
-//                do {
-//                    try await firestoreService.delete(id: id)
-//                } catch {
-//                    
-//                }
-//
-//            }
-//        }
     }
 
     func updateStock(by value: Int, for medicine: Medicine, and user: String) async {
@@ -58,28 +41,57 @@ class MedicineStockViewModel: ObservableObject {
         var updatedMedicine = medicine // keep the source of truth from the server
         updatedMedicine.stock += value
         do {
-            try? await firestoreService.update(model: updatedMedicine, reference: .medicines)
+            try await firestoreService.update(model: updatedMedicine, reference: .medicines)
             guard let newHistory = await prepareHistory(by: value, id: id, for: medicines[index], and: user) else { return }
             try await firestoreService.update(model: newHistory, reference: .history)
         } catch {
-
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
             }
     }
 
     private func prepareHistory(by value: Int, id: String, for medicine: Medicine, and user: String) async -> HistoryEntry? {
-        return HistoryEntry(medicineId: id,
-                     user: user,
-                     action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
-                     details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
+        if value == 0 {
+            return HistoryEntry(medicineId: id,
+                         user: user,
+                         action: "Updated \(medicine.name)",
+                         details: "Updated medicine details")
+        } else {
+            return HistoryEntry(medicineId: id,
+                         user: user,
+                         action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
+                         details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
+        }
+
     }
 
-    func updateMedicine(_ medicine: Medicine, user: String) async {
-        guard let id = medicine.id else { return }
+
+    //TODO: need to be removed
+    func addRandomMedicine(user: String) async {
+        let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
+        let historyEntry = HistoryEntry(medicineId: medicine.id ?? "",
+                                        user: user,
+                                        action: "Added \(medicine.name)",
+                                        details: "Added new medicine")
         do {
-            try await firestoreService.updateMedicine(medicine, user: user)
-            try await firestoreService.addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
+            try await firestoreService.update(model: medicine, reference: .medicines)
+            try await firestoreService.update(model: historyEntry, reference: .history)
         } catch let error {
-            print("Error updating document: \(error)")
+            // to do implement the error via an alert
         }
+    }
+
+    //TODO: need to be implemented
+    func deleteMedicines(at offsets: IndexSet) async {
+//        offsets.map { medicines[$0] }.forEach { medicine in
+//            if let id = medicine.id {
+//                do {
+//                    try await firestoreService.delete(id: id)
+//                } catch {
+//
+//                }
+//
+//            }
+//        }
     }
 }

@@ -11,3 +11,14 @@ protocol ModelProtocol {
     var id: String? { get set }
     var dictionary: [String: Any] { get }
 }
+
+enum CollectionReference: String {
+    case medicines, history
+
+    var id: String {
+        switch self {
+        case .medicines: return "medicineId"
+        case .history: return "historyId"
+        }
+    }
+}

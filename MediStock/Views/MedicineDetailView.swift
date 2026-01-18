@@ -33,11 +33,13 @@ struct MedicineDetailView: View {
                 await viewModel.fetchHistory(for: medicine)
             }
         }
-        .onChange(of: medicine) { _ in
-            Task {
-                await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
-            }
-        }
+
+        // TODO: should we keep the update here ?
+//        .onChange(of: medicine) { _ in
+//            Task {
+//                await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+//            }
+//        }
         .onDisappear {
             // on se désabonne
         }
@@ -52,7 +54,7 @@ extension MedicineDetailView {
             TextField("Name", text: $medicine.name)
             onSubmit {
                 Task {
-                    await                 viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                    await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                 }
             }
             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -68,7 +70,7 @@ extension MedicineDetailView {
             HStack {
                 Button(action: {
                     Task {
-                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: false)
+                        await viewModel.updateStock(by: -1, for: medicine, and: session.session?.uid ?? "")
                     }
                 }) {
                     Image(systemName: "minus.circle")
@@ -78,7 +80,7 @@ extension MedicineDetailView {
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
                 onSubmit {
                     Task {
-                        await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                     }
                 }
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -86,7 +88,7 @@ extension MedicineDetailView {
                 .frame(width: 100)
                 Button(action: {
                     Task {
-                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: true)
+                        await viewModel.updateStock(by: 1, for: medicine, and: session.session?.uid ?? "")
                     }
                 }) {
                     Image(systemName: "plus.circle")
@@ -106,7 +108,7 @@ extension MedicineDetailView {
             TextField("Aisle", text: $medicine.aisle)
             onSubmit {
                 Task {
-                    await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                    await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                 }
             }
             .textFieldStyle(RoundedBorderTextFieldStyle())

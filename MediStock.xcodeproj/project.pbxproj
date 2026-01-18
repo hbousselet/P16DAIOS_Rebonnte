@@ -55,8 +55,8 @@
 			membershipExceptions = (
 				AppDelegate.swift,
 				Assets.xcassets,
-				Firebase/FirestoreProtocol.swift,
 				Firebase/FirestoreService.swift,
+				Firebase/MedistockError.swift,
 				Firebase/SessionStore.swift,
 				"GoogleService-Info.plist",
 				MediStockApp.swift,
