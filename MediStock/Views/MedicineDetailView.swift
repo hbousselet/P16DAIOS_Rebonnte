@@ -29,7 +29,7 @@ struct MedicineDetailView: View {
         }
         .navigationBarTitle("Medicine Details", displayMode: .inline)
         .onAppear {
-            Task {
+            Task(priority: .background) {
                 await viewModel.fetchHistory(for: medicine)
             }
         }
@@ -53,7 +53,7 @@ extension MedicineDetailView {
                 .font(.headline)
             TextField("Name", text: $medicine.name)
             onSubmit {
-                Task {
+                Task(priority: .background) {
                     await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                 }
             }
@@ -69,7 +69,7 @@ extension MedicineDetailView {
                 .font(.headline)
             HStack {
                 Button(action: {
-                    Task {
+                    Task(priority: .background) {
                         await viewModel.updateStock(by: -1, for: medicine, and: session.session?.uid ?? "")
                     }
                 }) {
@@ -79,7 +79,7 @@ extension MedicineDetailView {
                 }
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
                 onSubmit {
-                    Task {
+                    Task(priority: .background) {
                         await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                     }
                 }
@@ -87,7 +87,7 @@ extension MedicineDetailView {
                 .keyboardType(.numberPad)
                 .frame(width: 100)
                 Button(action: {
-                    Task {
+                    Task(priority: .background) {
                         await viewModel.updateStock(by: 1, for: medicine, and: session.session?.uid ?? "")
                     }
                 }) {
@@ -107,7 +107,7 @@ extension MedicineDetailView {
                 .font(.headline)
             TextField("Aisle", text: $medicine.aisle)
             onSubmit {
-                Task {
+                Task(priority: .background) {
                     await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
                 }
             }

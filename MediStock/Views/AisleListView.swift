@@ -27,7 +27,7 @@ struct AisleListView: View {
             })
         }
         .onAppear {
-            Task {
+            Task(priority: .background) {
                 await viewModel.fetchMedicines()
             }
         }
