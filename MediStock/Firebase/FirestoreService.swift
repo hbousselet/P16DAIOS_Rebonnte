@@ -9,11 +9,12 @@ import Foundation
 import Firebase
 
 protocol FirestoreProtocol: Actor {
+    func create(model: any ModelProtocol, reference: CollectionReference) async throws
+    func delete(id: String, reference: CollectionReference) async throws
     func stream<T: Decodable & Sendable>(
         reference: CollectionReference,
         element: String?
     ) -> AsyncThrowingStream<[T], any Error>
-    func delete(id: String) async throws
     func update(model: ModelProtocol, reference: CollectionReference) async throws
 }
 
@@ -81,11 +82,21 @@ actor FirestoreService: FirestoreProtocol {
                 }
         }
     }
-    
+
     public func update(model: any ModelProtocol, reference: CollectionReference) async throws {
-        guard let id = model.id else { return }
-        try await db.collection(reference.rawValue).document(id)
-            .setData(model.dictionary)
+        switch reference {
+        case .medicines:
+            guard let id = model.id else { return }
+            try await db.collection(reference.rawValue).document(id)
+                .setData(model.dictionary)
+        default:
+            return
+        }
+    }
+
+    public func create(model: any ModelProtocol, reference: CollectionReference) async throws {
+        try await db.collection(reference.rawValue)
+            .addDocument(data: model.dictionary)
     }
 
     public func delete(id: String, reference: CollectionReference) async throws {

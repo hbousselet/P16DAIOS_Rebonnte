@@ -43,7 +43,7 @@ import Firebase
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)
             guard let newHistory = await prepareHistory(by: value, id: id, for: medicines[index], and: user) else { return }
-            try await firestoreService.update(model: newHistory, reference: .history)
+            try await firestoreService.create(model: newHistory, reference: .history)
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
