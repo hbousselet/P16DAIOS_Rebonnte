@@ -18,11 +18,6 @@ struct MedicineListView: View {
             }
         }
         .navigationBarTitle(aisle)
-        .onAppear {
-            Task(priority: .background) {
-                await viewModel.fetchMedicines()
-            }
-        }
     }
 }
 

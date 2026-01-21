@@ -8,7 +8,6 @@ struct MedicineDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Title
                 Text(medicine.name)
                     .font(.largeTitle)
                     .padding(.top, 20)
@@ -21,21 +20,6 @@ struct MedicineDetailView: View {
             .padding(.vertical)
         }
         .navigationBarTitle("Medicine Details", displayMode: .inline)
-        .onAppear {
-            Task(priority: .background) {
-//                await viewModel.fetchHistory(for: medicine)
-            }
-        }
-
-        // TODO: should we keep the update here ?
-//        .onChange(of: medicine) { _ in
-//            Task {
-//                await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
-//            }
-//        }
-        .onDisappear {
-            // on se désabonne
-        }
     }
 }
 

@@ -49,11 +49,6 @@ struct AllMedicinesView: View {
                 })
             }
         }
-        .onAppear {
-            Task(priority: .background) {
-                await viewModel.fetchMedicines()
-            }
-        }
     }
     
     var filteredAndSortedMedicines: [Medicine] {

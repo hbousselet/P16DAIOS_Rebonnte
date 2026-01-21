@@ -27,11 +27,6 @@ struct AisleListView: View {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
             })
         }
-        .onAppear {
-            Task(priority: .background) {
-                await viewModel.fetchMedicines()
-            }
-        }
     }
 }
 

@@ -17,6 +17,11 @@ struct MainTabView: View {
                     Text("All Medicines")
                 }
         }
+        .onAppear {
+            Task(priority: .background) {
+                await medicineViewModel.fetchMedicines()
+            }
+        }
     }
 }
 
