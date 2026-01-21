@@ -6,7 +6,7 @@ struct AllMedicinesView: View {
     @State private var sortOption: SortOption = .none
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Filtrage et Tri
                 HStack {

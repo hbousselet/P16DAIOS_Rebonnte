@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MedicineDetailView: View {
     @State var medicine: Medicine
-    @ObservedObject var viewModel = MedicineStockViewModel()
+    @ObservedObject var viewModel: MedicineStockViewModel
     @EnvironmentObject var session: SessionStore
 
     var body: some View {
@@ -13,16 +13,9 @@ struct MedicineDetailView: View {
                     .font(.largeTitle)
                     .padding(.top, 20)
 
-                // Medicine Name
                 medicineNameSection
-
-                // Medicine Stock
                 medicineStockSection
-
-                // Medicine Aisle
                 medicineAisleSection
-
-                // History Section
                 historySection
             }
             .padding(.vertical)
@@ -30,7 +23,7 @@ struct MedicineDetailView: View {
         .navigationBarTitle("Medicine Details", displayMode: .inline)
         .onAppear {
             Task(priority: .background) {
-                await viewModel.fetchHistory(for: medicine)
+//                await viewModel.fetchHistory(for: medicine)
             }
         }
 
@@ -52,11 +45,11 @@ extension MedicineDetailView {
             Text("Name")
                 .font(.headline)
             TextField("Name", text: $medicine.name)
-            onSubmit {
-                Task(priority: .background) {
-                    await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                .onSubmit {
+                    Task(priority: .background) {
+                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                    }
                 }
-            }
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .padding(.bottom, 10)
         }
@@ -78,11 +71,11 @@ extension MedicineDetailView {
                         .foregroundColor(.red)
                 }
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
-                onSubmit {
-                    Task(priority: .background) {
-                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                    .onSubmit {
+                        Task(priority: .background) {
+                            await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                        }
                     }
-                }
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.numberPad)
                 .frame(width: 100)
@@ -106,13 +99,13 @@ extension MedicineDetailView {
             Text("Aisle")
                 .font(.headline)
             TextField("Aisle", text: $medicine.aisle)
-            onSubmit {
-                Task(priority: .background) {
-                    await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                .onSubmit {
+                    Task(priority: .background) {
+                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                    }
                 }
-            }
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .padding(.bottom, 10)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.bottom, 10)
         }
         .padding(.horizontal)
     }
