@@ -88,8 +88,8 @@ actor FirestoreService: FirestoreProtocol {
             .setData(model.dictionary)
     }
 
-    public func delete(id: String) async throws {
-        try await db.collection("medicines").document(id) // modifier pour réutiliser reference
+    public func delete(id: String, reference: CollectionReference) async throws {
+        try await db.collection(reference.rawValue).document(id)
             .delete()
     }
 }

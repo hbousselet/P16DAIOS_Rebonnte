@@ -3,4 +3,66 @@
    uuid = "FC0A4F8D-6DDA-46A1-B696-35FD5A5E112F"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "FB0FFDAF-DF6A-4A14-BB30-48E2CF8ADA1E"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "MediStock/Firebase/FirestoreService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
+            landmarkName = "update(model:reference:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "FB0FFDAF-DF6A-4A14-BB30-48E2CF8ADA1E - eedb906be4dfb819"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for MediStock.FirestoreService.update(model: MediStock.ModelProtocol, reference: MediStock.CollectionReference) async throws -&gt; ()"
+                  moduleName = "MediStock.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/huguesbousselet/Documents/Openclassroom/Projets/16_Project/Exercice/P16DAIOS_Rebonnte/MediStock/Firebase/FirestoreService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "86"
+                  endingLineNumber = "86">
+               </Location>
+               <Location
+                  uuid = "FB0FFDAF-DF6A-4A14-BB30-48E2CF8ADA1E - 24439b6dc0e9fc9b"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for MediStock.FirestoreService.update(model: MediStock.ModelProtocol, reference: MediStock.CollectionReference) async throws -&gt; ()"
+                  moduleName = "MediStock.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/huguesbousselet/Documents/Openclassroom/Projets/16_Project/Exercice/P16DAIOS_Rebonnte/MediStock/Firebase/FirestoreService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "86"
+                  endingLineNumber = "86">
+               </Location>
+               <Location
+                  uuid = "FB0FFDAF-DF6A-4A14-BB30-48E2CF8ADA1E - 70798e0d21e02da"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(4) suspend resume partial function for MediStock.FirestoreService.update(model: MediStock.ModelProtocol, reference: MediStock.CollectionReference) async throws -&gt; ()"
+                  moduleName = "MediStock.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/huguesbousselet/Documents/Openclassroom/Projets/16_Project/Exercice/P16DAIOS_Rebonnte/MediStock/Firebase/FirestoreService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "86"
+                  endingLineNumber = "86">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
