@@ -89,7 +89,7 @@ actor FirestoreService: FirestoreProtocol {
     }
 
     public func delete(id: String) async throws {
-        try await db.collection("medicines").document(id)
+        try await db.collection("medicines").document(id) // modifier pour réutiliser reference
             .delete()
     }
 }

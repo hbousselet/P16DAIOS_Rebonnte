@@ -1,12 +1,12 @@
 import Foundation
 import Firebase
 
-class MedicineStockViewModel: ObservableObject {
-    @Published var medicines: [Medicine] = []
-    @Published var aisles: [String] = []
-    @Published var history: [HistoryEntry] = []
-    @Published var alert: String?
-    @Published var presentAlert: Bool = false
+@Observable class MedicineStockViewModel {
+    var medicines: [Medicine] = []
+    var aisles: [String] = []
+    var history: [HistoryEntry] = []
+    var alert: String?
+    var presentAlert: Bool = false
 
     private var firestoreService: FirestoreService = FirestoreService()
 

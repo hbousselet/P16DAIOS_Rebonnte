@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct AisleListView: View {
-    @ObservedObject var viewModel = MedicineStockViewModel()
+    @Environment(MedicineStockViewModel.self) private var viewModel
+
 
     var body: some View {
         NavigationStack {

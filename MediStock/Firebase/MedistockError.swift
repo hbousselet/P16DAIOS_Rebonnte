@@ -7,7 +7,8 @@
 
 import Foundation
 
-enum MedistockError: Error {
+// lokalise error
+enum MedistockError: LocalizedError {
     case addListenerError(String)
     case deleteError(String)
     case updateError(String)

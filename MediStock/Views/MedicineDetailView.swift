@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MedicineDetailView: View {
     @State var medicine: Medicine
-    @ObservedObject var viewModel: MedicineStockViewModel
+    @Environment(MedicineStockViewModel.self) private var viewModel
     @EnvironmentObject var session: SessionStore
 
     var body: some View {
@@ -140,6 +140,6 @@ struct MedicineDetailView_Previews: PreviewProvider {
     static var previews: some View {
         let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1")
         let sampleViewModel = MedicineStockViewModel()
-        MedicineDetailView(medicine: sampleMedicine, viewModel: sampleViewModel).environmentObject(SessionStore())
+        MedicineDetailView(medicine: sampleMedicine).environmentObject(SessionStore())
     }
 }

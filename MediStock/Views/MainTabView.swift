@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @Environment(MedicineStockViewModel.self) private var medicineViewModel
+
     var body: some View {
         TabView {
             AisleListView()

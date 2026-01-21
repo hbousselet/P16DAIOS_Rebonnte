@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AllMedicinesView: View {
-    @ObservedObject var viewModel = MedicineStockViewModel()
+    @Environment(MedicineStockViewModel.self) private var viewModel
     @State private var filterText: String = ""
     @State private var sortOption: SortOption = .none
 
@@ -29,7 +29,7 @@ struct AllMedicinesView: View {
                 // Liste des Médicaments
                 List {
                     ForEach(filteredAndSortedMedicines, id: \.id) { medicine in
-                        NavigationLink(destination: MedicineDetailView(medicine: medicine, viewModel: viewModel)) {
+                        NavigationLink(destination: MedicineDetailView(medicine: medicine)) {
                             VStack(alignment: .leading) {
                                 Text(medicine.name)
                                     .font(.headline)
