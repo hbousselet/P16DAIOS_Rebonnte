@@ -12,12 +12,14 @@ enum MedistockError: LocalizedError {
     case addListenerError(String)
     case deleteError(String)
     case updateError(String)
+    case createError(String)
 
     var errorDescription: String? {
         switch self {
         case .addListenerError(let message): return "Error when fetching the content in db with message: \(message)"
         case .updateError(let message): return "Error when updating the content in db with message: \(message)"
         case .deleteError(let message): return "Error when deleting the content in db with message: \(message)"
+        case .createError(let message): return "Error when creating the content in db with message: \(message)"
         }
     }
 }

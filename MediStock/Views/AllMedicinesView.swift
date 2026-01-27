@@ -38,6 +38,7 @@ struct AllMedicinesView: View {
                             }
                         }
                     }
+                    .onDelete(perform: removeMedicine)
                 }
                 .navigationBarTitle("All Medicines")
                 .navigationBarItems(trailing: Button(action: {
@@ -50,7 +51,16 @@ struct AllMedicinesView: View {
             }
         }
     }
-    
+
+    private func removeMedicine(offsets: IndexSet) {
+        offsets.forEach { index in
+            let id = viewModel.medicines[index].id
+            Task(priority: .background) {
+                await viewModel.deleteMedicines(id: id)
+            }
+        }
+    }
+
     var filteredAndSortedMedicines: [Medicine] {
         var medicines = viewModel.medicines
 

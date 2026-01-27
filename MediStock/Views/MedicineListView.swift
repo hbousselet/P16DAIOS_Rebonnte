@@ -16,8 +16,18 @@ struct MedicineListView: View {
                     }
                 }
             }
+            .onDelete(perform: removeMedicine)
         }
         .navigationBarTitle(aisle)
+    }
+
+    private func removeMedicine(offsets: IndexSet) {
+        offsets.forEach { index in
+            let id = viewModel.medicines[index].id
+            Task(priority: .background) {
+                await viewModel.deleteMedicines(id: id)
+            }
+        }
     }
 }
 

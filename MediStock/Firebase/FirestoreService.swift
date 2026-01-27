@@ -9,7 +9,7 @@ import Foundation
 import Firebase
 
 protocol FirestoreProtocol: Actor {
-    func create(model: any ModelProtocol, reference: CollectionReference) async throws
+    func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String?
     func delete(id: String, reference: CollectionReference) async throws
     func stream<T: Decodable & Sendable>(
         reference: CollectionReference,
@@ -57,7 +57,7 @@ actor FirestoreService: FirestoreProtocol {
     ) -> ListenerRegistration {
         if let element {
             return db.collection(reference.rawValue)
-                .whereField(reference.id, isEqualTo: element) // voir si on peut raccourcir cette méthode
+                .whereField(reference.id, isEqualTo: element)
                 .addSnapshotListener { (querySnapshot, error) in
                     if let error = error {
                         handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
@@ -87,20 +87,43 @@ actor FirestoreService: FirestoreProtocol {
         switch reference {
         case .medicines:
             guard let id = model.id else { return }
-            try await db.collection(reference.rawValue).document(id)
-                .setData(model.dictionary)
+            do {
+                try await db.collection(reference.rawValue).document(id)
+                    .setData(model.dictionary)
+            } catch {
+                throw MedistockError.updateError(error.localizedDescription)
+            }
         default:
             return
         }
     }
 
-    public func create(model: any ModelProtocol, reference: CollectionReference) async throws {
-        try await db.collection(reference.rawValue)
-            .addDocument(data: model.dictionary)
+    public func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String? {
+        do {
+            let document = try await db.collection(reference.rawValue)
+                .addDocument(data: model.dictionary)
+            return document.documentID
+        } catch {
+            throw MedistockError.createError(error.localizedDescription)
+        }
     }
 
     public func delete(id: String, reference: CollectionReference) async throws {
-        try await db.collection(reference.rawValue).document(id)
-            .delete()
+        do {
+            try await db.collection(reference.rawValue).document(id)
+                .delete()
+            if reference == .medicines {
+                // get documents
+                let documents = try await db.collection(CollectionReference.history.rawValue).whereField("medicine_id", isEqualTo: id).getDocuments()
+
+                //loop in the documents and delete each one
+                for document in documents.documents {
+                    try await db.collection(CollectionReference.history.rawValue).document(document.documentID)
+                        .delete()
+                }
+            }
+        } catch {
+            throw MedistockError.deleteError(error.localizedDescription)
+        }
     }
 }

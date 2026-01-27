@@ -62,6 +62,7 @@
 				MediStockApp.swift,
 				Models/HistoryEntry.swift,
 				Models/Medicine.swift,
+				Models/MedistockAction.swift,
 				Models/ModelProtocol.swift,
 				"Preview Content/Preview Assets.xcassets",
 				ViewModels/MedicineStockViewModel.swift,

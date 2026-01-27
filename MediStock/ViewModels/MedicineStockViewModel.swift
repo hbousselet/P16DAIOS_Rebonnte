@@ -42,56 +42,62 @@ import Firebase
         updatedMedicine.stock += value
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(by: value, id: id, for: medicines[index], and: user) else { return }
-            try await firestoreService.create(model: newHistory, reference: .history)
+            guard let newHistory = await prepareHistory(by: value, action: .operation, id: id, for: medicines[index], and: user) else { return }
+            let _ = try await firestoreService.create(model: newHistory, reference: .history)
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
             }
     }
 
-    private func prepareHistory(by value: Int, id: String, for medicine: Medicine, and user: String) async -> HistoryEntry? {
-        if value == 0 {
-            return HistoryEntry(medicineId: id,
-                         user: user,
-                         action: "Updated \(medicine.name)",
-                         details: "Updated medicine details")
-        } else {
+    private func prepareHistory(by value: Int? = nil,
+                                action: MedistockAction,
+                                id: String?,
+                                for medicine: Medicine,
+                                and user: String) async -> HistoryEntry? {
+        switch action {
+        case .operation:
+            guard let value, let id else { return nil }
             return HistoryEntry(medicineId: id,
                          user: user,
                          action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
                          details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
+        case .create:
+            guard let id else { return nil }
+            return HistoryEntry(medicineId: id,
+                                            user: user,
+                                            action: "Created \(medicine.name)",
+                                details: "Create new medicine with quantity: \(medicine.stock)")
+        case .update:
+            guard let id else { return nil }
+            return HistoryEntry(medicineId: id,
+                         user: user,
+                         action: "Updated \(medicine.name)",
+                         details: "Updated medicine details")
         }
-
     }
 
 
-    //TODO: need to be removed
     func addRandomMedicine(user: String) async {
         let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
-        let historyEntry = HistoryEntry(medicineId: medicine.id ?? "",
-                                        user: user,
-                                        action: "Added \(medicine.name)",
-                                        details: "Added new medicine")
+
         do {
-            try await firestoreService.update(model: medicine, reference: .medicines)
-            try await firestoreService.update(model: historyEntry, reference: .history)
-        } catch let error {
-            // to do implement the error via an alert
+            let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine, and: user) else { return }
+            let _ = try await firestoreService.create(model: newHistory, reference: .history)
+        } catch {
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
         }
     }
 
-    //TODO: need to be implemented
-    func deleteMedicines(at offsets: IndexSet) async {
-//        offsets.map { medicines[$0] }.forEach { medicine in
-//            if let id = medicine.id {
-//                do {
-//                    try await firestoreService.delete(id: id)
-//                } catch {
-//
-//                }
-//
-//            }
-//        }
+    func deleteMedicines(id: String?) async {
+        guard let id else { return }
+        do {
+            try await firestoreService.delete(id: id, reference: .medicines)
+        } catch {
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
+        }
     }
 }
