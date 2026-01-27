@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MedicineListView: View {
     @Environment(MedicineStockViewModel.self) private var viewModel
+    @Environment(\.presentationMode) var presentationMode
     var aisle: String
 
     var body: some View {
@@ -26,6 +27,7 @@ struct MedicineListView: View {
             let id = viewModel.medicines[index].id
             Task(priority: .background) {
                 await viewModel.deleteMedicines(id: id)
+                presentationMode.wrappedValue.dismiss()
             }
         }
     }
