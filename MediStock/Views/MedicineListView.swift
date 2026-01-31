@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MedicineListView: View {
     @Environment(MedicineStockViewModel.self) private var viewModel
-    @Environment(\.dismiss) var dismiss // use this instead
+    @Environment(\.dismiss) var dismiss
     var aisle: String
 
     var body: some View {
