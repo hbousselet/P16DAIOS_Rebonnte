@@ -10,6 +10,10 @@ import Firebase
 
     private var firestoreService: FirestoreService = FirestoreService()
 
+    var currentUser: String? {
+        FirebaseAuth.Auth.auth().currentUser?.uid
+    }
+
     @MainActor
     func fetchMedicines() async {
         do {

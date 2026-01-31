@@ -43,7 +43,8 @@ struct AllMedicinesView: View {
                 .navigationBarTitle("All Medicines")
                 .navigationBarItems(trailing: Button(action: {
                     Task {
-                        await viewModel.addRandomMedicine(user: "test_user") // Remplacez par l'utilisateur actuel
+                        guard let id = viewModel.currentUser else { return }
+                        await viewModel.addRandomMedicine(user: id)
                     }
                 }) {
                     Image(systemName: "plus")
