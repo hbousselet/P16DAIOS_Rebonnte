@@ -1,6 +1,8 @@
 import Foundation
 import Firebase
 
+// mettre en observable
+// à faire plus tard AuthService ainsi qu'un viewModel
 class SessionStore: ObservableObject {
     @Published var session: User?
     var handle: AuthStateDidChangeListenerHandle?

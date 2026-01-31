@@ -117,6 +117,11 @@ extension MedicineDetailView {
             }
         }
         .padding(.horizontal)
+        .onAppear {
+            Task(priority: .background) {
+                await viewModel.fetchHistory(for: medicine)
+            }
+        }
     }
 }
 

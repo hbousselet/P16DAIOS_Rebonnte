@@ -16,9 +16,6 @@ enum CollectionReference: String {
     case medicines, history
 
     var id: String {
-        switch self {
-        case .medicines: return "medicineId"
-        case .history: return "historyId"
-        }
+        "medicine_id"
     }
 }

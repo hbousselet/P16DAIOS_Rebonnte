@@ -13,6 +13,7 @@ enum MedistockError: LocalizedError {
     case deleteError(String)
     case updateError(String)
     case createError(String)
+    case getError(String)
 
     var errorDescription: String? {
         switch self {
@@ -20,6 +21,7 @@ enum MedistockError: LocalizedError {
         case .updateError(let message): return "Error when updating the content in db with message: \(message)"
         case .deleteError(let message): return "Error when deleting the content in db with message: \(message)"
         case .createError(let message): return "Error when creating the content in db with message: \(message)"
+        case .getError(let message): return "Error when getting the content in db with message: \(message)"
         }
     }
 }

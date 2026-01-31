@@ -9,6 +9,14 @@ struct HistoryEntry: Identifiable, Codable, ModelProtocol {
     var details: String
     var timestamp: Date
 
+    enum CodingKeys: String, CodingKey {
+        case medicineId = "medicine_id"
+        case user
+        case action
+        case details
+        case timestamp
+    }
+
     init(id: String? = nil, medicineId: String, user: String, action: String, details: String, timestamp: Date = Date()) {
         self.id = id
         self.medicineId = medicineId

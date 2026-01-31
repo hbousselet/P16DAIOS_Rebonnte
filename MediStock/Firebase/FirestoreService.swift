@@ -8,6 +8,8 @@
 import Foundation
 import Firebase
 
+//FIXME: vérification duCollectionReference lorque que l'on veut taper sur history, vérifier historyID
+
 protocol FirestoreProtocol: Actor {
     func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String?
     func delete(id: String, reference: CollectionReference) async throws
@@ -16,6 +18,7 @@ protocol FirestoreProtocol: Actor {
         element: String?
     ) -> AsyncThrowingStream<[T], any Error>
     func update(model: ModelProtocol, reference: CollectionReference) async throws
+    func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T]
 }
 
 actor FirestoreService: FirestoreProtocol {
@@ -88,7 +91,8 @@ actor FirestoreService: FirestoreProtocol {
         case .medicines:
             guard let id = model.id else { return }
             do {
-                try await db.collection(reference.rawValue).document(id)
+                try await db.collection(reference.rawValue)
+                    .document(id)
                     .setData(model.dictionary)
             } catch {
                 throw MedistockError.updateError(error.localizedDescription)
@@ -109,21 +113,43 @@ actor FirestoreService: FirestoreProtocol {
     }
 
     public func delete(id: String, reference: CollectionReference) async throws {
+        // as we can't use the delete cascade strategy inside Firestore (not for freemium account),
+        // we decided to fetch all the documents having this medicine_id then to loop over to delete them
         do {
-            try await db.collection(reference.rawValue).document(id)
+            try await db.collection(reference.rawValue)
+                .document(id)
                 .delete()
             if reference == .medicines {
                 // get documents
-                let documents = try await db.collection(CollectionReference.history.rawValue).whereField("medicine_id", isEqualTo: id).getDocuments()
+                let documents = try await db.collection(CollectionReference.history.rawValue)
+                    .whereField(reference.id, isEqualTo: id)
+                    .getDocuments()
 
                 //loop in the documents and delete each one
                 for document in documents.documents {
-                    try await db.collection(CollectionReference.history.rawValue).document(document.documentID)
+                    try await db.collection(CollectionReference.history.rawValue)
+                        .document(document.documentID)
                         .delete()
                 }
             }
         } catch {
             throw MedistockError.deleteError(error.localizedDescription)
+        }
+    }
+
+    public func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T] {
+        do {
+            var result: [T] = []
+            let querySnapshot = try await db.collection(reference.rawValue)
+                .whereField(reference.id, isEqualTo: id)
+                .getDocuments()
+            for document in querySnapshot.documents {
+                let data = try document.data(as: T.self)
+                result.append(data)
+            }
+            return result
+        } catch {
+            throw MedistockError.getError(error.localizedDescription)
         }
     }
 }

@@ -52,6 +52,7 @@ struct AllMedicinesView: View {
         }
     }
 
+// à vérifier peut-être bug, pas le bon id
     private func removeMedicine(offsets: IndexSet) {
         offsets.forEach { index in
             let id = viewModel.medicines[index].id

@@ -23,12 +23,11 @@ import Firebase
         }
     }
 
+    @MainActor
     func fetchHistory(for medicine: Medicine) async {
         guard let medicineId = medicine.id else { return }
         do {
-            for try await historyEntry: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicineId) {
-                history.append(contentsOf: historyEntry)
-            }
+            history = try await firestoreService.get(reference: .history, id: medicineId)
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
@@ -78,6 +77,7 @@ import Firebase
     }
 
 
+    //FIXME: Need to be removed later
     func addRandomMedicine(user: String) async {
         let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
 
