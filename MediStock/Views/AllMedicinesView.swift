@@ -4,11 +4,11 @@ struct AllMedicinesView: View {
     @Environment(MedicineStockViewModel.self) private var viewModel
     @State private var filterText: String = ""
     @State private var sortOption: SortOption = .none
+    @State private var showNewStockPage: Bool = false
 
     var body: some View {
         NavigationStack {
             VStack {
-                // Filtrage et Tri
                 HStack {
                     TextField("Filter by name", text: $filterText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -26,7 +26,6 @@ struct AllMedicinesView: View {
                 }
                 .padding(.top, 10)
                 
-                // Liste des Médicaments
                 List {
                     ForEach(filteredAndSortedMedicines, id: \.id) { medicine in
                         NavigationLink(destination: MedicineDetailView(medicine: medicine)) {
@@ -42,13 +41,13 @@ struct AllMedicinesView: View {
                 }
                 .navigationBarTitle("All Medicines")
                 .navigationBarItems(trailing: Button(action: {
-                    Task {
-                        guard let id = viewModel.currentUser else { return }
-                        await viewModel.addRandomMedicine(user: id)
-                    }
+                    showNewStockPage.toggle()
                 }) {
                     Image(systemName: "plus")
                 })
+                .navigationDestination(isPresented: $showNewStockPage) {
+                    MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.currentUser), isCreatingNewStock: true)
+                }
             }
         }
     }
@@ -65,12 +64,10 @@ struct AllMedicinesView: View {
     var filteredAndSortedMedicines: [Medicine] {
         var medicines = viewModel.medicines
 
-        // Filtrage
         if !filterText.isEmpty {
             medicines = medicines.filter { $0.name.lowercased().contains(filterText.lowercased()) }
         }
 
-        // Tri
         switch sortOption {
         case .name:
             medicines.sort { $0.name.lowercased() < $1.name.lowercased() }
