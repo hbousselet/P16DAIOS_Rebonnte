@@ -15,6 +15,7 @@ struct HistoryEntry: Identifiable, Codable, ModelProtocol {
         case action
         case details
         case timestamp
+        case id
     }
 
     init(id: String? = nil, medicineId: String, user: String, action: String, details: String, timestamp: Date = Date()) {

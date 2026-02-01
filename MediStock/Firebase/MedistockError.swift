@@ -14,6 +14,7 @@ enum MedistockError: LocalizedError {
     case updateError(String)
     case createError(String)
     case getError(String)
+    case noUserFound(String)
 
     var errorDescription: String? {
         switch self {
@@ -22,6 +23,7 @@ enum MedistockError: LocalizedError {
         case .deleteError(let message): return "Error when deleting the content in db with message: \(message)"
         case .createError(let message): return "Error when creating the content in db with message: \(message)"
         case .getError(let message): return "Error when getting the content in db with message: \(message)"
+        case .noUserFound(let message): return "No user found with this id: \(message)"
         }
     }
 }

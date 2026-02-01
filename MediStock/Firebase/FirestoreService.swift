@@ -18,11 +18,15 @@ protocol FirestoreProtocol: Actor {
         element: String?
     ) -> AsyncThrowingStream<[T], any Error>
     func update(model: ModelProtocol, reference: CollectionReference) async throws
-    func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T]
+    func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T] // we be maybe removed
 }
 
 actor FirestoreService: FirestoreProtocol {
     private let db: Firestore
+
+    private var currentUser: String {
+        FirebaseAuth.Auth.auth().currentUser?.uid ?? ""
+    }
 
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
@@ -61,6 +65,7 @@ actor FirestoreService: FirestoreProtocol {
         if let element {
             return db.collection(reference.rawValue)
                 .whereField(reference.id, isEqualTo: element)
+                .whereField(reference.user, isEqualTo: currentUser)
                 .addSnapshotListener { (querySnapshot, error) in
                     if let error = error {
                         handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
@@ -73,6 +78,7 @@ actor FirestoreService: FirestoreProtocol {
                 }
         } else {
             return db.collection(reference.rawValue)
+                .whereField(reference.user, isEqualTo: currentUser)
                 .addSnapshotListener { (querySnapshot, error) in
                     if let error = error {
                         handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
@@ -123,6 +129,7 @@ actor FirestoreService: FirestoreProtocol {
                 // get documents
                 let documents = try await db.collection(CollectionReference.history.rawValue)
                     .whereField(reference.id, isEqualTo: id)
+                    .whereField(reference.user, isEqualTo: currentUser)
                     .getDocuments()
 
                 //loop in the documents and delete each one
@@ -142,6 +149,7 @@ actor FirestoreService: FirestoreProtocol {
             var result: [T] = []
             let querySnapshot = try await db.collection(reference.rawValue)
                 .whereField(reference.id, isEqualTo: id)
+                .whereField(reference.user, isEqualTo: currentUser)
                 .getDocuments()
             for document in querySnapshot.documents {
                 let data = try document.data(as: T.self)

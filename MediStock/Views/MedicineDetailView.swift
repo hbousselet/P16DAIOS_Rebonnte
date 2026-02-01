@@ -127,7 +127,7 @@ extension MedicineDetailView {
 
 struct MedicineDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1")
+        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1", user: "cailloux")
         let sampleViewModel = MedicineStockViewModel()
         MedicineDetailView(medicine: sampleMedicine).environmentObject(SessionStore())
     }

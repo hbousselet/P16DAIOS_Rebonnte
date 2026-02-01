@@ -18,4 +18,8 @@ enum CollectionReference: String {
     var id: String {
         "medicine_id"
     }
+
+    var user: String {
+        "user"
+    }
 }
