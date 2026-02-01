@@ -27,7 +27,7 @@ struct AisleListView: View {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
             })
             .navigationDestination(isPresented: $showNewStockPage) {
-                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.currentUser), isCreatingNewStock: true)
+                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true)
             }
         }
     }

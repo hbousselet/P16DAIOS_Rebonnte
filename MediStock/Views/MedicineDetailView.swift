@@ -127,7 +127,7 @@ extension MedicineDetailView {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(entry.action)
                         .font(.headline)
-                    Text("User: \(entry.user)")
+                    Text("User: \(entry.userEmail)")
                         .font(.subheadline)
                     Text("Date: \(entry.timestamp.formatted())")
                         .font(.subheadline)
@@ -168,7 +168,7 @@ extension MedicineDetailView {
 
 struct MedicineDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1", user: "cailloux")
+        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1", userId: "cailloux")
         let sampleViewModel = MedicineStockViewModel()
         MedicineDetailView(medicine: sampleMedicine).environmentObject(SessionStore())
     }

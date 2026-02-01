@@ -15,6 +15,7 @@ struct ContentView: View {
         }
         .onAppear {
             session.listen()
+            medicineViewModel.session = session
         }
     }
 }

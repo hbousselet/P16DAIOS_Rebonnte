@@ -8,14 +8,11 @@ import Firebase
     var alert: String?
     var presentAlert: Bool = false
 
+    var session: SessionStore?
+
     private var firestoreService: FirestoreService = FirestoreService()
     private var medicineStreamTask: Task<Void, Never>?
     private var historyStreamTask: Task<Void, Never>?
-
-
-    var currentUser: String? {
-        FirebaseAuth.Auth.auth().currentUser?.uid
-    }
 
     @MainActor
     func fetchMedicines() async {
@@ -54,7 +51,6 @@ import Firebase
 
     func updateStock(by value: Int, for medicine: Medicine) async {
         guard let id = medicine.id,
-              let currentUser,
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
         var updatedMedicine = medicine // keep the source of truth from the server
         updatedMedicine.stock += value
@@ -76,25 +72,31 @@ import Firebase
         case .operation:
             guard let value,
                   let id,
-            let currentUser else { return nil }
+                  let user = session?.session?.uid,
+                  let email = session?.session?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                         user: currentUser,
-                         action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
-                         details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
+                                userId: user,
+                                userEmail: email,
+                                action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
+                                details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
         case .create:
             guard let id,
-                  let currentUser else { return nil }
+                  let user = session?.session?.uid,
+                  let email = session?.session?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                                            user: currentUser,
-                                            action: "Created \(medicine.name)",
+                                userId: user,
+                                userEmail: email,
+                                action: "Created \(medicine.name)",
                                 details: "Create new medicine with quantity: \(medicine.stock)")
         case .update:
             guard let id,
-                  let currentUser else { return nil }
+                  let user = session?.session?.uid,
+                  let email = session?.session?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                         user: currentUser,
-                         action: "Updated \(medicine.name)",
-                         details: "Updated medicine details")
+                                userId: user,
+                                userEmail: email,
+                                action: "Updated \(medicine.name)",
+                                details: "Updated medicine details")
         }
     }
 

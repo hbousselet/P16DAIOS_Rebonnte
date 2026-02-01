@@ -20,6 +20,6 @@ enum CollectionReference: String {
     }
 
     var user: String {
-        "user"
+        "user_id"
     }
 }

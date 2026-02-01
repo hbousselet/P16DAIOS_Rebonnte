@@ -6,14 +6,22 @@ struct Medicine: Identifiable, Codable, Equatable, ModelProtocol {
     var name: String
     var stock: Int
     var aisle: String
-    var user: String
+    var userId: String
 
-    init(id: String? = nil, name: String, stock: Int, aisle: String, user: String) {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case stock
+        case aisle
+        case userId = "user_id"
+    }
+
+    init(id: String? = nil, name: String, stock: Int, aisle: String, userId: String) {
         self.id = id
         self.name = name
         self.stock = stock
         self.aisle = aisle
-        self.user = user
+        self.userId = userId
     }
 
     static func == (lhs: Medicine, rhs: Medicine) -> Bool {
@@ -21,21 +29,21 @@ struct Medicine: Identifiable, Codable, Equatable, ModelProtocol {
         lhs.name == rhs.name &&
         lhs.stock == rhs.stock &&
         lhs.aisle == rhs.aisle &&
-        lhs.user == rhs.user
+        lhs.userId == rhs.userId
     }
 
     var dictionary: [String: Any] {
         let dict = ["name": name,
                     "stock": stock,
                     "aisle": aisle,
-                    "user": user] as [String : Any]
+                    "user_id": userId] as [String : Any]
         return dict.compactMapValues { $0 }
     }
 
-    static func createNewStock(for user: String?) -> Self {
+    static func createNewStock(for user: User?) -> Self {
         return Medicine(name: "Medicine",
                         stock: 0,
                         aisle: "Aisle",
-                        user: user ?? "not found")
+                        userId: user?.uid ?? "not found")
     }
 }

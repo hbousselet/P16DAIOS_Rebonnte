@@ -46,7 +46,7 @@ struct AllMedicinesView: View {
                     Image(systemName: "plus")
                 })
                 .navigationDestination(isPresented: $showNewStockPage) {
-                    MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.currentUser), isCreatingNewStock: true)
+                    MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true)
                 }
             }
         }
