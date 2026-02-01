@@ -99,7 +99,10 @@ extension MedicineDetailView {
             Text("History")
                 .font(.headline)
                 .padding(.top, 20)
-            ForEach(viewModel.history.filter { $0.medicineId == medicine.id }, id: \.id) { entry in
+            ForEach(viewModel.history
+                .filter({ $0.medicineId == medicine.id })
+                .sorted(by: { $0.timestamp > $1.timestamp})
+                    , id: \.id) { entry in
                 VStack(alignment: .leading, spacing: 5) {
                     Text(entry.action)
                         .font(.headline)
