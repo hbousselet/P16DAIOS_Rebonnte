@@ -122,12 +122,12 @@ import Firebase
 }
 
 extension MedicineStockViewModel {
-    func stopFetchingMedicines() {
+    func stopMedicineStream() {
         medicineStreamTask?.cancel()
         medicineStreamTask = nil
     }
 
-    func stopFetchingHistory() {
+    func stopHistoryStream() {
         historyStreamTask?.cancel()
         historyStreamTask = nil
     }

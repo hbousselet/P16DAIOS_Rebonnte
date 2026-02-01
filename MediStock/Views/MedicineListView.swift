@@ -24,10 +24,15 @@ struct MedicineListView: View {
 
     private func removeMedicine(offsets: IndexSet) {
         offsets.forEach { index in
-            let id = viewModel.medicines[index].id
+            let medicines = viewModel.medicines.filter { $0.aisle == aisle }
+            guard let occurrence = viewModel.medicines.firstIndex(where: { $0.id == medicines[index].id }) else { return }
+            let id = viewModel.medicines[occurrence].id
             Task(priority: .background) {
                 await viewModel.deleteMedicines(id: id)
-                dismiss()
+                viewModel.stopHistoryStream()
+                if viewModel.medicines.filter({ $0.aisle == aisle }).isEmpty {
+                    dismiss()
+                }
             }
         }
     }
