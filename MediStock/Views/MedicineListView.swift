@@ -20,6 +20,11 @@ struct MedicineListView: View {
             .onDelete(perform: removeMedicine)
         }
         .navigationBarTitle(aisle)
+        .onChange(of: viewModel.medicines) {
+            if viewModel.medicines.filter({ $0.aisle == aisle }).isEmpty {
+                dismiss()
+            }
+        }
     }
 
     private func removeMedicine(offsets: IndexSet) {
@@ -30,9 +35,6 @@ struct MedicineListView: View {
             Task(priority: .background) {
                 await viewModel.deleteMedicines(id: id)
                 viewModel.stopHistoryStream()
-                if viewModel.medicines.filter({ $0.aisle == aisle }).isEmpty {
-                    dismiss()
-                }
             }
         }
     }
