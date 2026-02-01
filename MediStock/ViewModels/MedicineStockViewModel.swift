@@ -52,14 +52,15 @@ import Firebase
         }
     }
 
-    func updateStock(by value: Int, for medicine: Medicine, and user: String) async {
+    func updateStock(by value: Int, for medicine: Medicine) async {
         guard let id = medicine.id,
+              let currentUser,
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
         var updatedMedicine = medicine // keep the source of truth from the server
         updatedMedicine.stock += value
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(by: value, action: .operation, id: id, for: medicines[index], and: user) else { return }
+            guard let newHistory = await prepareHistory(by: value, action: .operation, id: id, for: medicines[index]) else { return }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
         } catch {
             presentAlert = true
@@ -70,27 +71,41 @@ import Firebase
     private func prepareHistory(by value: Int? = nil,
                                 action: MedistockAction,
                                 id: String?,
-                                for medicine: Medicine,
-                                and user: String) async -> HistoryEntry? {
+                                for medicine: Medicine) async -> HistoryEntry? {
         switch action {
         case .operation:
-            guard let value, let id else { return nil }
+            guard let value,
+                  let id,
+            let currentUser else { return nil }
             return HistoryEntry(medicineId: id,
-                         user: user,
+                         user: currentUser,
                          action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
                          details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
         case .create:
-            guard let id else { return nil }
+            guard let id,
+                  let currentUser else { return nil }
             return HistoryEntry(medicineId: id,
-                                            user: user,
+                                            user: currentUser,
                                             action: "Created \(medicine.name)",
                                 details: "Create new medicine with quantity: \(medicine.stock)")
         case .update:
-            guard let id else { return nil }
+            guard let id,
+                  let currentUser else { return nil }
             return HistoryEntry(medicineId: id,
-                         user: user,
+                         user: currentUser,
                          action: "Updated \(medicine.name)",
                          details: "Updated medicine details")
+        }
+    }
+
+    func createStock(for medicine: Medicine) async {
+        do {
+            let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return }
+            let _ = try await firestoreService.create(model: newHistory, reference: .history)
+        } catch {
+            presentAlert = true
+            alert = (error as? MedistockError)?.errorDescription
         }
     }
 
@@ -102,7 +117,7 @@ import Firebase
 
         do {
             let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine, and: user) else { return }
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
         } catch {
             presentAlert = true

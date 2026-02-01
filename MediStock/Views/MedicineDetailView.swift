@@ -2,8 +2,10 @@ import SwiftUI
 
 struct MedicineDetailView: View {
     @State var medicine: Medicine
+    @State var isCreatingNewStock: Bool = false
     @Environment(MedicineStockViewModel.self) private var viewModel
     @EnvironmentObject var session: SessionStore
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ScrollView {
@@ -15,11 +17,16 @@ struct MedicineDetailView: View {
                 medicineNameSection
                 medicineStockSection
                 medicineAisleSection
-                historySection
+                if isCreatingNewStock {
+                    createButton
+                        .padding(.horizontal)
+                } else {
+                    historySection
+                }
             }
             .padding(.vertical)
         }
-        .navigationBarTitle("Medicine Details", displayMode: .inline)
+        .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
     }
 }
 
@@ -30,8 +37,10 @@ extension MedicineDetailView {
                 .font(.headline)
             TextField("Name", text: $medicine.name)
                 .onSubmit {
-                    Task(priority: .background) {
-                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                    if !isCreatingNewStock {
+                        Task(priority: .background) {
+                            await viewModel.updateStock(by: 0, for: medicine)
+                        }
                     }
                 }
             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -46,8 +55,12 @@ extension MedicineDetailView {
                 .font(.headline)
             HStack {
                 Button(action: {
-                    Task(priority: .background) {
-                        await viewModel.updateStock(by: -1, for: medicine, and: session.session?.uid ?? "")
+                    if !isCreatingNewStock {
+                        Task(priority: .background) {
+                            await viewModel.updateStock(by: -1, for: medicine)
+                        }
+                    } else {
+                        medicine.stock -= 1
                     }
                 }) {
                     Image(systemName: "minus.circle")
@@ -56,16 +69,22 @@ extension MedicineDetailView {
                 }
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
                     .onSubmit {
-                        Task(priority: .background) {
-                            await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                        if !isCreatingNewStock {
+                            Task(priority: .background) {
+                                await viewModel.updateStock(by: 0, for: medicine)
+                            }
                         }
                     }
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .keyboardType(.numberPad)
                 .frame(width: 100)
                 Button(action: {
-                    Task(priority: .background) {
-                        await viewModel.updateStock(by: 1, for: medicine, and: session.session?.uid ?? "")
+                    if !isCreatingNewStock {
+                        Task(priority: .background) {
+                            await viewModel.updateStock(by: 1, for: medicine)
+                        }
+                    } else {
+                        medicine.stock += 1
                     }
                 }) {
                     Image(systemName: "plus.circle")
@@ -84,8 +103,10 @@ extension MedicineDetailView {
                 .font(.headline)
             TextField("Aisle", text: $medicine.aisle)
                 .onSubmit {
-                    Task(priority: .background) {
-                        await viewModel.updateStock(by: 0, for: medicine, and: session.session?.uid ?? "")
+                    if !isCreatingNewStock {
+                        Task(priority: .background) {
+                            await viewModel.updateStock(by: 0, for: medicine)
+                        }
                     }
                 }
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -124,6 +145,23 @@ extension MedicineDetailView {
             Task(priority: .background) {
                 await viewModel.fetchHistory(for: medicine)
             }
+        }
+    }
+
+    private var createButton: some View {
+        Button(action: {
+            Task(priority: .background) {
+                await viewModel.createStock(for: medicine)
+                isCreatingNewStock.toggle()
+                dismiss()
+            }
+        }) {
+            Text("Create new stock")
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(10)
         }
     }
 }

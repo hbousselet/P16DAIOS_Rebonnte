@@ -31,4 +31,11 @@ struct Medicine: Identifiable, Codable, Equatable, ModelProtocol {
                     "user": user] as [String : Any]
         return dict.compactMapValues { $0 }
     }
+
+    static func createNewStock(for user: String?) -> Self {
+        return Medicine(name: "Medicine",
+                        stock: 0,
+                        aisle: "Aisle",
+                        user: user ?? "not found")
+    }
 }
