@@ -9,6 +9,9 @@ import Firebase
     var presentAlert: Bool = false
 
     private var firestoreService: FirestoreService = FirestoreService()
+    private var medicineStreamTask: Task<Void, Never>?
+    private var historyStreamTask: Task<Void, Never>?
+
 
     var currentUser: String? {
         FirebaseAuth.Auth.auth().currentUser?.uid
@@ -16,26 +19,36 @@ import Firebase
 
     @MainActor
     func fetchMedicines() async {
-        do {
-            for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines) {
-                medicines = medicine
-                aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+        medicineStreamTask?.cancel()
+
+        medicineStreamTask = Task {
+            do {
+                for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines) {
+                    guard !Task.isCancelled else { break }
+                    medicines = medicine
+                    aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+                }
+            } catch {
+                presentAlert = true
+                alert = (error as? MedistockError)?.errorDescription
             }
-        } catch {
-            presentAlert = true
-            alert = (error as? MedistockError)?.errorDescription
         }
     }
 
     @MainActor
     func fetchHistory(for medicine: Medicine) async {
-        do {
-            for try await historyEnt: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicine.id) {
-                history = historyEnt
+        historyStreamTask?.cancel()
+
+        historyStreamTask = Task {
+            do {
+                for try await historyEnt: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicine.id) {
+                    guard !Task.isCancelled else { break }
+                    history = historyEnt
+                }
+            } catch {
+                presentAlert = true
+                alert = (error as? MedistockError)?.errorDescription
             }
-        } catch {
-            presentAlert = true
-            alert = (error as? MedistockError)?.errorDescription
         }
     }
 
@@ -105,5 +118,17 @@ import Firebase
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
         }
+    }
+}
+
+extension MedicineStockViewModel {
+    func stopFetchingMedicines() {
+        medicineStreamTask?.cancel()
+        medicineStreamTask = nil
+    }
+
+    func stopFetchingHistory() {
+        historyStreamTask?.cancel()
+        historyStreamTask = nil
     }
 }
