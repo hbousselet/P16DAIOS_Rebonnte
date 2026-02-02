@@ -8,10 +8,16 @@ struct AisleListView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(viewModel.aisles, id: \.self) { aisle in
-                    NavigationLink(destination: MedicineListView(aisle: aisle)) {
-                        Text(aisle)
+            ZStack {
+                if viewModel.showLoading {
+                    LoadingView()
+                        .zIndex(1)
+                }
+                List {
+                    ForEach(viewModel.aisles, id: \.self) { aisle in
+                        NavigationLink(destination: MedicineListView(aisle: aisle)) {
+                            Text(aisle)
+                        }
                     }
                 }
             }

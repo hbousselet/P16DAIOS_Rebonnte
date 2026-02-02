@@ -69,6 +69,7 @@
 				Views/AisleListView.swift,
 				Views/AllMedicinesView.swift,
 				Views/ContentView.swift,
+				Views/LoadingView.swift,
 				Views/LoginView.swift,
 				Views/MainTabView.swift,
 				Views/MedicineDetailView.swift,

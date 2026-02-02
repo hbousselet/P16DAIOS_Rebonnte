@@ -5,17 +5,29 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            AisleListView()
-                .tabItem {
-                    Image(systemName: "list.dash")
-                    Text("Aisles")
+            ZStack {
+                if medicineViewModel.showLoading {
+                    LoadingView()
+                        .zIndex(1)
                 }
+                AisleListView()
+                    .tabItem {
+                        Image(systemName: "list.dash")
+                        Text("Aisles")
+                    }
+            }
 
-            AllMedicinesView()
-                .tabItem {
-                    Image(systemName: "square.grid.2x2")
-                    Text("All Medicines")
+            ZStack {
+                if medicineViewModel.showLoading {
+                    LoadingView()
+                        .zIndex(1)
                 }
+                AllMedicinesView()
+                    .tabItem {
+                        Image(systemName: "square.grid.2x2")
+                        Text("All Medicines")
+                    }
+            }
         }
         .onAppear {
             Task(priority: .background) {

@@ -7,6 +7,7 @@ import Firebase
     var history: [HistoryEntry] = []
     var alert: String?
     var presentAlert: Bool = false
+    var showLoading: Bool = false
 
     var session: SessionStore?
 
@@ -19,11 +20,13 @@ import Firebase
         medicineStreamTask?.cancel()
 
         medicineStreamTask = Task {
+            showLoading = true
             do {
                 for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines) {
                     guard !Task.isCancelled else { break }
                     medicines = medicine
                     aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+                    showLoading = false
                 }
             } catch {
                 presentAlert = true
@@ -37,10 +40,12 @@ import Firebase
         historyStreamTask?.cancel()
 
         historyStreamTask = Task {
+            showLoading = true
             do {
                 for try await historyEnt: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicine.id) {
                     guard !Task.isCancelled else { break }
                     history = historyEnt
+                    showLoading = false
                 }
             } catch {
                 presentAlert = true
@@ -52,12 +57,14 @@ import Firebase
     func updateStock(by value: Int, for medicine: Medicine) async {
         guard let id = medicine.id,
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
+        showLoading = true
         var updatedMedicine = medicine // keep the source of truth from the server
         updatedMedicine.stock += value
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)
             guard let newHistory = await prepareHistory(by: value, action: .operation, id: id, for: medicines[index]) else { return }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
+            showLoading = false
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
@@ -102,9 +109,11 @@ import Firebase
 
     func createStock(for medicine: Medicine) async {
         do {
+            showLoading = true
             let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
             guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
+            showLoading = false
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
@@ -114,7 +123,9 @@ import Firebase
     func deleteMedicines(id: String?) async {
         guard let id else { return }
         do {
+            showLoading = true
             try await firestoreService.delete(id: id, reference: .medicines)
+            showLoading = false
         } catch {
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription

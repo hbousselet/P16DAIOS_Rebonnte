@@ -8,23 +8,29 @@ struct MedicineDetailView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(medicine.name)
-                    .font(.largeTitle)
-                    .padding(.top, 20)
-
-                medicineNameSection
-                medicineStockSection
-                medicineAisleSection
-                if isCreatingNewStock {
-                    createButton
-                        .padding(.horizontal)
-                } else {
-                    historySection
-                }
+        ZStack {
+            if viewModel.showLoading {
+                LoadingView()
+                    .zIndex(1)
             }
-            .padding(.vertical)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(medicine.name)
+                        .font(.largeTitle)
+                        .padding(.top, 20)
+
+                    medicineNameSection
+                    medicineStockSection
+                    medicineAisleSection
+                    if isCreatingNewStock {
+                        createButton
+                            .padding(.horizontal)
+                    } else {
+                        historySection
+                    }
+                }
+                .padding(.vertical)
+            }
         }
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
     }
