@@ -8,7 +8,6 @@
 import Foundation
 import Firebase
 
-//FIXME: vérification duCollectionReference lorque que l'on veut taper sur history, vérifier historyID
 
 protocol FirestoreProtocol: Actor {
     func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String?

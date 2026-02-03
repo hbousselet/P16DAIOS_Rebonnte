@@ -29,6 +29,7 @@ import Firebase
                     showLoading = false
                 }
             } catch {
+                showLoading = false
                 presentAlert = true
                 alert = (error as? MedistockError)?.errorDescription
             }
@@ -48,6 +49,7 @@ import Firebase
                     showLoading = false
                 }
             } catch {
+                showLoading = false
                 presentAlert = true
                 alert = (error as? MedistockError)?.errorDescription
             }
@@ -66,6 +68,7 @@ import Firebase
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
             showLoading = false
         } catch {
+            showLoading = false
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
             }
@@ -115,6 +118,7 @@ import Firebase
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
             showLoading = false
         } catch {
+            showLoading = false
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
         }
@@ -127,6 +131,7 @@ import Firebase
             try await firestoreService.delete(id: id, reference: .medicines)
             showLoading = false
         } catch {
+            showLoading = false
             presentAlert = true
             alert = (error as? MedistockError)?.errorDescription
         }
