@@ -2,38 +2,27 @@ import SwiftUI
 
 struct MainTabView: View {
     @Environment(MedicineStockViewModel.self) private var medicineViewModel
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         TabView {
-            ZStack {
-                if medicineViewModel.showLoading {
-                    LoadingView()
-                        .zIndex(1)
-                }
-                AisleListView()
+                AisleListView(viewModel: medicineViewModel)
                     .tabItem {
                         Image(systemName: "list.dash")
                         Text("Aisles")
                     }
-            }
-
-            ZStack {
-                if medicineViewModel.showLoading {
-                    LoadingView()
-                        .zIndex(1)
-                }
-                AllMedicinesView()
+                AllMedicinesView(viewModel: medicineViewModel)
                     .tabItem {
                         Image(systemName: "square.grid.2x2")
                         Text("All Medicines")
                     }
-            }
         }
         .onAppear {
             Task(priority: .background) {
                 await medicineViewModel.fetchMedicines()
             }
         }
+        .environment(\.colorScheme, isDarkMode ? .dark : .light)
     }
 }
 

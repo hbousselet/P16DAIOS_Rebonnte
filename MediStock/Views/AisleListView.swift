@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct AisleListView: View {
-    @Environment(MedicineStockViewModel.self) private var viewModel
-
+    @State var viewModel: MedicineStockViewModel
+    @AppStorage("isDarkMode") private var isDarkMode = false
     @State var showNewStockPage: Bool = false
 
 
@@ -33,14 +33,23 @@ struct AisleListView: View {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
             })
             .navigationDestination(isPresented: $showNewStockPage) {
-                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true)
+                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true, viewModel: viewModel)
             }
+            .environment(\.colorScheme, isDarkMode ? .dark : .light)
+            .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
+                Button("OK") { }
+                Button("Retry fetch") {
+                    Task(priority: .background) {
+                        await viewModel.fetchMedicines()
+                    }
+                }
+            }, message: {
+                if let error = viewModel.alertTabViews {
+                    Text(error)
+                } else {
+                    Text("Unknown Error")
+                }
+            })
         }
-    }
-}
-
-struct AisleListView_Previews: PreviewProvider {
-    static var previews: some View {
-        AisleListView()
     }
 }

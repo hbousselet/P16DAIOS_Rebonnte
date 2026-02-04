@@ -3,7 +3,7 @@ import SwiftUI
 struct MedicineDetailView: View {
     @State var medicine: Medicine
     @State var isCreatingNewStock: Bool = false
-    @Environment(MedicineStockViewModel.self) private var viewModel
+    @State var viewModel: MedicineStockViewModel
     @EnvironmentObject var session: SessionStore
     @Environment(\.dismiss) var dismiss
 
@@ -33,6 +33,17 @@ struct MedicineDetailView: View {
             }
         }
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
+        .alert("Alert !", isPresented: $viewModel.presentAlertDetailsView, actions: {
+            Button("OK") {
+                viewModel.removeAlert()
+            }
+        }, message: {
+            if let error = viewModel.alertDetailsView {
+                Text(error)
+            } else {
+                Text("Unknown Error")
+            }
+        })
     }
 }
 
@@ -157,9 +168,11 @@ extension MedicineDetailView {
     private var createButton: some View {
         Button(action: {
             Task(priority: .background) {
-                await viewModel.createStock(for: medicine)
-                isCreatingNewStock.toggle()
-                dismiss()
+                let hasCreated = await viewModel.createStock(for: medicine)
+                if hasCreated {
+                    isCreatingNewStock.toggle()
+                    dismiss()
+                }
             }
         }) {
             Text("Create new stock")
@@ -169,13 +182,5 @@ extension MedicineDetailView {
                 .background(Color.blue)
                 .cornerRadius(10)
         }
-    }
-}
-
-struct MedicineDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1", userId: "cailloux")
-        let sampleViewModel = MedicineStockViewModel()
-        MedicineDetailView(medicine: sampleMedicine).environmentObject(SessionStore())
     }
 }

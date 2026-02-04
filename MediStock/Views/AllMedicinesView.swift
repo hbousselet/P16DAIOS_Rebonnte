@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AllMedicinesView: View {
-    @Environment(MedicineStockViewModel.self) private var viewModel
+    @State var viewModel: MedicineStockViewModel
     @State private var filterText: String = ""
     @State private var sortOption: SortOption = .none
     @State private var showNewStockPage: Bool = false
@@ -33,7 +33,7 @@ struct AllMedicinesView: View {
                     
                     List {
                         ForEach(filteredAndSortedMedicines, id: \.id) { medicine in
-                            NavigationLink(destination: MedicineDetailView(medicine: medicine)) {
+                            NavigationLink(destination: MedicineDetailView(medicine: medicine, viewModel: viewModel)) {
                                 VStack(alignment: .leading) {
                                     Text(medicine.name)
                                         .font(.headline)
@@ -51,8 +51,22 @@ struct AllMedicinesView: View {
                         Image(systemName: "plus")
                     })
                     .navigationDestination(isPresented: $showNewStockPage) {
-                        MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true)
+                        MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true, viewModel: viewModel)
                     }
+                    .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
+                        Button("OK") { }
+                        Button("Retry fetch") {
+                            Task(priority: .background) {
+                                await viewModel.fetchMedicines()
+                            }
+                        }
+                    }, message: {
+                        if let error = viewModel.alertTabViews {
+                            Text(error)
+                        } else {
+                            Text("Unknown Error")
+                        }
+                    })
                 }
             }
         }
@@ -93,10 +107,4 @@ enum SortOption: String, CaseIterable, Identifiable {
     case stock
 
     var id: String { self.rawValue }
-}
-
-struct AllMedicinesView_Previews: PreviewProvider {
-    static var previews: some View {
-        AllMedicinesView()
-    }
 }

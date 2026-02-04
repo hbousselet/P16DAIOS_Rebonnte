@@ -55,6 +55,7 @@
 			membershipExceptions = (
 				AppDelegate.swift,
 				Assets.xcassets,
+				Convenient/Extensions.swift,
 				Firebase/FirestoreService.swift,
 				Firebase/MedistockError.swift,
 				Firebase/SessionStore.swift,

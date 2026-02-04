@@ -11,11 +11,13 @@ import SwiftUI
 struct MediStockApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var sessionStore = SessionStore()
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(sessionStore)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
 }

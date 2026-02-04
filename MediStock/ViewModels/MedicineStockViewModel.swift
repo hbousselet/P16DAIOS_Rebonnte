@@ -5,9 +5,13 @@ import Firebase
     var medicines: [Medicine] = []
     var aisles: [String] = []
     var history: [HistoryEntry] = []
-    var alert: String?
-    var presentAlert: Bool = false
     var showLoading: Bool = false
+
+    var alertTabViews: String?
+    var presentAlertTabViews: Bool = false
+
+    var alertDetailsView: String?
+    var presentAlertDetailsView: Bool = false
 
     var session: SessionStore?
 
@@ -30,8 +34,8 @@ import Firebase
                 }
             } catch {
                 showLoading = false
-                presentAlert = true
-                alert = (error as? MedistockError)?.errorDescription
+                presentAlertTabViews = true
+                alertTabViews = (error as? MedistockError)?.errorDescription
             }
         }
     }
@@ -50,8 +54,8 @@ import Firebase
                 }
             } catch {
                 showLoading = false
-                presentAlert = true
-                alert = (error as? MedistockError)?.errorDescription
+                presentAlertDetailsView = true
+                alertDetailsView = (error as? MedistockError)?.errorDescription
             }
         }
     }
@@ -69,8 +73,8 @@ import Firebase
             showLoading = false
         } catch {
             showLoading = false
-            presentAlert = true
-            alert = (error as? MedistockError)?.errorDescription
+            presentAlertDetailsView = true
+            alertDetailsView = (error as? MedistockError)?.errorDescription
             }
     }
 
@@ -110,17 +114,39 @@ import Firebase
         }
     }
 
-    func createStock(for medicine: Medicine) async {
+    func createStock(for medicine: Medicine) async -> Bool {
+        if !medicine.aisle.containsANumber() {
+            prepareAlert(MedistockError.noNumberInAisleName)
+            return false
+        }
+        if medicine.name.isEmpty {
+            prepareAlert(MedistockError.emptyMedicineName)
+            return false
+        }
+        if medicine.aisle.isEmpty {
+            prepareAlert(MedistockError.emptyAisleName)
+            return false
+        }
+        if medicine.stock == 0 {
+            prepareAlert(MedistockError.emptyStockMedicineCreation)
+            return false
+        }
+        if medicines.filter({$0.name == medicine.name && $0.aisle == medicine.aisle}).first != nil {
+            prepareAlert(MedistockError.alreadyExists)
+            return false
+        }
         do {
             showLoading = true
             let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return }
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return false}
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
             showLoading = false
+            return true
         } catch {
             showLoading = false
-            presentAlert = true
-            alert = (error as? MedistockError)?.errorDescription
+            presentAlertDetailsView = true
+            alertDetailsView = (error as? MedistockError)?.errorDescription
+            return false
         }
     }
 
@@ -132,9 +158,20 @@ import Firebase
             showLoading = false
         } catch {
             showLoading = false
-            presentAlert = true
-            alert = (error as? MedistockError)?.errorDescription
+            presentAlertTabViews = true
+            alertTabViews = (error as? MedistockError)?.errorDescription
         }
+    }
+
+    private func prepareAlert(_ error: MedistockError) {
+        showLoading = false
+        presentAlertDetailsView = true
+        alertDetailsView = error.errorDescription
+    }
+
+    func removeAlert() {
+        presentAlertDetailsView = false
+        alertDetailsView = nil
     }
 }
 
