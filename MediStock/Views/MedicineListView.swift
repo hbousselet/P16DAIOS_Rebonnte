@@ -32,16 +32,10 @@ struct MedicineListView: View {
             let medicines = viewModel.medicines.filter { $0.aisle == aisle }
             guard let occurrence = viewModel.medicines.firstIndex(where: { $0.id == medicines[index].id }) else { return }
             let id = viewModel.medicines[occurrence].id
-            Task(priority: .background) {
+            Task(priority: .userInitiated) {
                 await viewModel.deleteMedicines(id: id)
                 viewModel.stopHistoryStream()
             }
         }
-    }
-}
-
-struct MedicineListView_Previews: PreviewProvider {
-    static var previews: some View {
-        MedicineListView(aisle: "Aisle 1").environmentObject(SessionStore())
     }
 }

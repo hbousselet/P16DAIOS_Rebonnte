@@ -18,16 +18,10 @@ struct MainTabView: View {
                     }
         }
         .onAppear {
-            Task(priority: .background) {
+            Task(priority: .userInitiated) {
                 await medicineViewModel.fetchMedicines()
             }
         }
         .environment(\.colorScheme, isDarkMode ? .dark : .light)
-    }
-}
-
-struct MainTabView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainTabView()
     }
 }

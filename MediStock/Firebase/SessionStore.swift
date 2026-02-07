@@ -3,6 +3,7 @@ import Firebase
 
 // mettre en observable
 // à faire plus tard AuthService ainsi qu'un viewModel
+//passer en mainActor
 class SessionStore: ObservableObject {
     @Published var session: User?
     var handle: AuthStateDidChangeListenerHandle?

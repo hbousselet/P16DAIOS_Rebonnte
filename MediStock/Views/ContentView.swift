@@ -21,9 +21,3 @@ struct ContentView: View {
         .environment(\.colorScheme, isDarkMode ? .dark : .light)
     }
 }
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView().environmentObject(SessionStore())
-    }
-}

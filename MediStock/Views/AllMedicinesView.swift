@@ -56,7 +56,7 @@ struct AllMedicinesView: View {
                     .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                         Button("OK") { }
                         Button("Retry fetch") {
-                            Task(priority: .background) {
+                            Task(priority: .userInitiated) {
                                 await viewModel.fetchMedicines()
                             }
                         }
@@ -75,7 +75,7 @@ struct AllMedicinesView: View {
     private func removeMedicine(offsets: IndexSet) {
         offsets.forEach { index in
             let id = viewModel.medicines[index].id
-            Task(priority: .background) {
+            Task(priority: .userInitiated) {
                 await viewModel.deleteMedicines(id: id)
             }
         }

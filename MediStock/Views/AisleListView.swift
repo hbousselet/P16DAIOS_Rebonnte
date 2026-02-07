@@ -39,7 +39,7 @@ struct AisleListView: View {
             .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                 Button("OK") { }
                 Button("Retry fetch") {
-                    Task(priority: .background) {
+                    Task(priority: .userInitiated) {
                         await viewModel.fetchMedicines()
                     }
                 }

@@ -55,7 +55,7 @@ extension MedicineDetailView {
             TextField("Name", text: $medicine.name)
                 .onSubmit {
                     if !isCreatingNewStock {
-                        Task(priority: .background) {
+                        Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: 0, for: medicine)
                         }
                     }
@@ -73,7 +73,7 @@ extension MedicineDetailView {
             HStack {
                 Button(action: {
                     if !isCreatingNewStock {
-                        Task(priority: .background) {
+                        Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: -1, for: medicine)
                         }
                     } else {
@@ -87,7 +87,7 @@ extension MedicineDetailView {
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
                     .onSubmit {
                         if !isCreatingNewStock {
-                            Task(priority: .background) {
+                            Task(priority: .userInitiated) {
                                 await viewModel.updateStock(by: 0, for: medicine)
                             }
                         }
@@ -97,7 +97,7 @@ extension MedicineDetailView {
                 .frame(width: 100)
                 Button(action: {
                     if !isCreatingNewStock {
-                        Task(priority: .background) {
+                        Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: 1, for: medicine)
                         }
                     } else {
@@ -121,7 +121,7 @@ extension MedicineDetailView {
             TextField("Aisle", text: $medicine.aisle)
                 .onSubmit {
                     if !isCreatingNewStock {
-                        Task(priority: .background) {
+                        Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: 0, for: medicine)
                         }
                     }
@@ -159,7 +159,7 @@ extension MedicineDetailView {
         }
         .padding(.horizontal)
         .onAppear {
-            Task(priority: .background) {
+            Task(priority: .userInitiated) {
                 await viewModel.fetchHistory(for: medicine)
             }
         }
@@ -167,7 +167,7 @@ extension MedicineDetailView {
 
     private var createButton: some View {
         Button(action: {
-            Task(priority: .background) {
+            Task(priority: .userInitiated) {
                 let hasCreated = await viewModel.createStock(for: medicine)
                 if hasCreated {
                     isCreatingNewStock.toggle()
