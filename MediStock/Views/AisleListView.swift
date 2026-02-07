@@ -2,9 +2,7 @@ import SwiftUI
 
 struct AisleListView: View {
     @State var viewModel: MedicineStockViewModel
-    @AppStorage("isDarkMode") private var isDarkMode = false
     @State var showNewStockPage: Bool = false
-
 
     var body: some View {
         NavigationStack {
@@ -35,7 +33,6 @@ struct AisleListView: View {
             .navigationDestination(isPresented: $showNewStockPage) {
                 MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true, viewModel: viewModel)
             }
-            .environment(\.colorScheme, isDarkMode ? .dark : .light)
             .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                 Button("OK") { }
                 Button("Retry fetch") {

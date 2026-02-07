@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @Environment(MedicineStockViewModel.self) private var medicineViewModel
-    @AppStorage("isDarkMode") private var isDarkMode = false
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         TabView {
@@ -22,6 +22,6 @@ struct MainTabView: View {
                 await medicineViewModel.fetchMedicines()
             }
         }
-        .environment(\.colorScheme, isDarkMode ? .dark : .light)
+        .preferredColorScheme(colorScheme)
     }
 }

@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var session: SessionStore
     @State private var medicineViewModel = MedicineStockViewModel()
-    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         Group {
@@ -18,6 +17,5 @@ struct ContentView: View {
             session.listen()
             medicineViewModel.session = session
         }
-        .environment(\.colorScheme, isDarkMode ? .dark : .light)
     }
 }
