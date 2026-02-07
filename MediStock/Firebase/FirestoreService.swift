@@ -61,11 +61,13 @@ actor FirestoreService: FirestoreProtocol {
         element: String? = nil,
         handler: @escaping (Result<[T], Error>) -> Void
     ) -> ListenerRegistration {
-        if let element {
-            return db.collection(reference.rawValue)
-                .whereField(reference.id, isEqualTo: element)
+            var field = db.collection(reference.rawValue)
                 .whereField(reference.user, isEqualTo: currentUser)
-                .addSnapshotListener { (querySnapshot, error) in
+
+            if let element {
+                field = field.whereField(reference.id, isEqualTo: element)
+            }
+                return field.addSnapshotListener { (querySnapshot, error) in
                     if let error = error {
                         handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
                     } else {
@@ -75,20 +77,6 @@ actor FirestoreService: FirestoreProtocol {
                         handler(.success(items))
                     }
                 }
-        } else {
-            return db.collection(reference.rawValue)
-                .whereField(reference.user, isEqualTo: currentUser)
-                .addSnapshotListener { (querySnapshot, error) in
-                    if let error = error {
-                        handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
-                    } else {
-                        let items = querySnapshot?.documents.compactMap { document in
-                            return try? document.data(as: T.self)
-                        } ?? []
-                        handler(.success(items))
-                    }
-                }
-        }
     }
 
     public func update(model: any ModelProtocol, reference: CollectionReference) async throws {
