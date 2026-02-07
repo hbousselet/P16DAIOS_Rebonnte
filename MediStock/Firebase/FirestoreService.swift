@@ -17,7 +17,6 @@ protocol FirestoreProtocol: Actor {
         element: String?
     ) -> AsyncThrowingStream<[T], any Error>
     func update(model: ModelProtocol, reference: CollectionReference) async throws
-    func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T] // we be maybe removed
 }
 
 actor FirestoreService: FirestoreProtocol {
@@ -128,23 +127,6 @@ actor FirestoreService: FirestoreProtocol {
             }
         } catch {
             throw MedistockError.deleteError(error.localizedDescription)
-        }
-    }
-
-    public func get<T: Decodable>(reference: CollectionReference, id: String) async throws -> [T] {
-        do {
-            var result: [T] = []
-            let querySnapshot = try await db.collection(reference.rawValue)
-                .whereField(reference.id, isEqualTo: id)
-                .whereField(reference.user, isEqualTo: currentUser)
-                .getDocuments()
-            for document in querySnapshot.documents {
-                let data = try document.data(as: T.self)
-                result.append(data)
-            }
-            return result
-        } catch {
-            throw MedistockError.getError(error.localizedDescription)
         }
     }
 }
