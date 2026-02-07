@@ -6,7 +6,7 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-                AisleListView(viewModel: medicineViewModel)
+            AisleListView(viewModel: medicineViewModel)
                     .tabItem {
                         Image(systemName: "list.dash")
                         Text("Aisles")

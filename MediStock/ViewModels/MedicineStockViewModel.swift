@@ -13,7 +13,7 @@ import Firebase
     var alertDetailsView: String?
     var presentAlertDetailsView: Bool = false
 
-    var session: SessionStore?
+    var user: AuthUserProtocol?
 
     private var firestoreService: FirestoreService = FirestoreService()
     private var medicineStreamTask: Task<Void, Never>?
@@ -86,28 +86,28 @@ import Firebase
         case .operation:
             guard let value,
                   let id,
-                  let user = session?.session?.uid,
-                  let email = session?.session?.email else { return nil }
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                                userId: user,
+                                userId: userUID,
                                 userEmail: email,
                                 action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
                                 details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
         case .create:
             guard let id,
-                  let user = session?.session?.uid,
-                  let email = session?.session?.email else { return nil }
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                                userId: user,
+                                userId: userUID,
                                 userEmail: email,
                                 action: "Created \(medicine.name)",
                                 details: "Create new medicine with quantity: \(medicine.stock)")
         case .update:
             guard let id,
-                  let user = session?.session?.uid,
-                  let email = session?.session?.email else { return nil }
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
             return HistoryEntry(medicineId: id,
-                                userId: user,
+                                userId: userUID,
                                 userEmail: email,
                                 action: "Updated \(medicine.name)",
                                 details: "Updated medicine details")

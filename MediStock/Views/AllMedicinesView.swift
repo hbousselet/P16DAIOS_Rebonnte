@@ -51,7 +51,7 @@ struct AllMedicinesView: View {
                         Image(systemName: "plus")
                     })
                     .navigationDestination(isPresented: $showNewStockPage) {
-                        MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true, viewModel: viewModel)
+                        MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), isCreatingNewStock: true, viewModel: viewModel)
                     }
                     .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                         Button("OK") { }

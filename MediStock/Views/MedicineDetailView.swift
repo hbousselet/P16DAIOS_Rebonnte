@@ -4,16 +4,15 @@ struct MedicineDetailView: View {
     @State var medicine: Medicine
     @State var isCreatingNewStock: Bool = false
     @State var viewModel: MedicineStockViewModel
-    @EnvironmentObject var session: SessionStore
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text(medicine.name)
                     .font(.largeTitle)
                     .padding(.top, 20)
-                
+
                 medicineNameSection
                 medicineStockSection
                 medicineAisleSection
@@ -26,7 +25,7 @@ struct MedicineDetailView: View {
             }
             .padding(.vertical)
         }
-        
+
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
         .alert("Alert !", isPresented: $viewModel.presentAlertDetailsView, actions: {
             Button("OK") {

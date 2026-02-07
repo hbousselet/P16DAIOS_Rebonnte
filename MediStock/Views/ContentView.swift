@@ -1,21 +1,22 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var session: SessionStore
+    @State private var authViewModel = AuthentificationViewModel()
     @State private var medicineViewModel = MedicineStockViewModel()
 
     var body: some View {
         Group {
-            if session.session != nil {
+            if authViewModel.authService.user != nil {
                 MainTabView()
                     .environment(medicineViewModel)
+                    .environment(authViewModel)
             } else {
-                LoginView()
+                LoginView(authViewModel: AuthentificationViewModel())
             }
         }
         .onAppear {
-            session.listen()
-            medicineViewModel.session = session
+            authViewModel.startListening()
+            medicineViewModel.user = authViewModel.authService.user
         }
     }
 }

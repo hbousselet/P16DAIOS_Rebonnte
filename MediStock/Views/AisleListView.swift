@@ -3,6 +3,7 @@ import SwiftUI
 struct AisleListView: View {
     @State var viewModel: MedicineStockViewModel
     @State var showNewStockPage: Bool = false
+    @Environment(AuthentificationViewModel.self) private var authViewModel
 
     var body: some View {
         NavigationStack {
@@ -26,12 +27,12 @@ struct AisleListView: View {
                 Image(systemName: "plus")
             })
             .navigationBarItems(leading: Button(action: {
-                //FIXME: NEED TO BE IMPLEMENTED
+                authViewModel.signOut()
             }) {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
             })
             .navigationDestination(isPresented: $showNewStockPage) {
-                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.session?.session), isCreatingNewStock: true, viewModel: viewModel)
+                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), isCreatingNewStock: true, viewModel: viewModel)
             }
             .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                 Button("OK") { }

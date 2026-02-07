@@ -1,29 +1,40 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""
-    @EnvironmentObject var session: SessionStore
+    @State var authViewModel: AuthentificationViewModel
 
     var body: some View {
         VStack {
-            TextField("Email", text: $email)
+            TextField("Email", text: $authViewModel.email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
-            SecureField("Password", text: $password)
+            SecureField("Password", text: $authViewModel.password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
             Button(action: {
-                session.signIn(email: email, password: password)
+                Task(priority: .userInitiated) {
+                    await authViewModel.signIn()
+                }
             }) {
                 Text("Login")
             }
             Button(action: {
-                session.signUp(email: email, password: password)
+                Task(priority: .userInitiated) {
+                    await authViewModel.signUp()
+                }
             }) {
                 Text("Sign Up")
             }
         }
         .padding()
+        .alert("Alert !", isPresented: $authViewModel.alertIsPresented, actions: {
+            Button("OK") { }
+        }, message: {
+            if let error = authViewModel.alert {
+                Text(error)
+            } else {
+                Text("Unknown Error")
+            }
+        })
     }
 }
