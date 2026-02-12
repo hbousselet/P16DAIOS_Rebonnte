@@ -2,12 +2,8 @@ import Foundation
 import Firebase
 import FirebaseAuth
 
-// mettre en observable
-// à faire plus tard AuthService ainsi qu'un viewModel
-//passer en mainActor
-
 protocol AuthFirebaseProtocol {
-    var user: User? {get}
+    var user: User? { get }
     func listen()
     func signIn(email: String, password: String) async throws
     func signUp(email: String, password: String) async throws
@@ -15,8 +11,8 @@ protocol AuthFirebaseProtocol {
 }
 
 protocol AuthUserProtocol {
-    var uid: String {get}
-    var email: String? {get}
+    var uid: String { get }
+    var email: String? { get }
 }
 
 extension FirebaseAuth.User : AuthUserProtocol {}

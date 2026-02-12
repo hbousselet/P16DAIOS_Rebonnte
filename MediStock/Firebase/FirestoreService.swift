@@ -60,7 +60,7 @@ actor FirestoreService: FirestoreProtocol {
         element: String? = nil,
         handler: @escaping (Result<[T], Error>) -> Void
     ) -> ListenerRegistration {
-            var field = db.collection(reference.rawValue)
+        var field = db.collection(reference.rawValue)
                 .whereField(reference.user, isEqualTo: currentUser)
 
             if let element {
@@ -115,7 +115,6 @@ actor FirestoreService: FirestoreProtocol {
                 // get documents
                 let documents = try await db.collection(CollectionReference.history.rawValue)
                     .whereField(reference.id, isEqualTo: id)
-                    .whereField(reference.user, isEqualTo: currentUser)
                     .getDocuments()
 
                 //loop in the documents and delete each one

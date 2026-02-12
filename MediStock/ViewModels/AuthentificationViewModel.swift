@@ -10,7 +10,6 @@ import Foundation
 @Observable class AuthentificationViewModel {
     var email: String = ""
     var password: String = ""
-    var name: String = ""
     var alertIsPresented: Bool = false
     var alert: String?
 

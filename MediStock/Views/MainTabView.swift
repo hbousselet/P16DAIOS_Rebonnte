@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainTabView: View {
     @Environment(MedicineStockViewModel.self) private var medicineViewModel
+    @Environment(AuthentificationViewModel.self) private var authViewModel
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
@@ -18,6 +19,7 @@ struct MainTabView: View {
                     }
         }
         .onAppear {
+            medicineViewModel.user = authViewModel.authService.user
             Task(priority: .userInitiated) {
                 await medicineViewModel.fetchMedicines()
             }

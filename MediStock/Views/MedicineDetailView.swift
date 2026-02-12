@@ -1,10 +1,29 @@
 import SwiftUI
 
 struct MedicineDetailView: View {
-    @State var medicine: Medicine
+    @Binding var medicine: Medicine
     @State var isCreatingNewStock: Bool = false
     @State var viewModel: MedicineStockViewModel
     @Environment(\.dismiss) var dismiss
+
+    var index: Int?
+
+    init(index: Int? = nil, viewModel: MedicineStockViewModel, isCreatingNewStock: Bool = false) {
+        self.index = index
+        self._viewModel = State(wrappedValue: viewModel)
+        self._isCreatingNewStock = State(wrappedValue: isCreatingNewStock)
+        if let index {
+            self._medicine = Binding(
+                get: { viewModel.medicines[index] },
+                set: { viewModel.medicines[index] = $0 }
+            )
+        } else {
+            self._medicine = Binding(
+                get: { viewModel.newMedicine },
+                set: { viewModel.newMedicine = $0 }
+            )
+        }
+    }
 
     var body: some View {
         ScrollView {
@@ -12,7 +31,6 @@ struct MedicineDetailView: View {
                 Text(medicine.name)
                     .font(.largeTitle)
                     .padding(.top, 20)
-
                 medicineNameSection
                 medicineStockSection
                 medicineAisleSection
@@ -25,7 +43,6 @@ struct MedicineDetailView: View {
             }
             .padding(.vertical)
         }
-
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
         .alert("Alert !", isPresented: $viewModel.presentAlertDetailsView, actions: {
             Button("OK") {
@@ -162,6 +179,10 @@ extension MedicineDetailView {
     private var createButton: some View {
         Button(action: {
             Task(priority: .userInitiated) {
+                if medicine.userId == "" {
+                    guard let userId = (viewModel.user as? User)?.uid else { return }
+                    medicine.userId = userId
+                }
                 let hasCreated = await viewModel.createStock(for: medicine)
                 if hasCreated {
                     isCreatingNewStock.toggle()

@@ -14,7 +14,7 @@ struct AisleListView: View {
                 }
                 List {
                     ForEach(viewModel.aisles, id: \.self) { aisle in
-                        NavigationLink(destination: MedicineListView(aisle: aisle)) {
+                        NavigationLink(destination: MedicineListView(viewModel: viewModel, aisle: aisle)) {
                             Text(aisle)
                         }
                     }
@@ -32,7 +32,8 @@ struct AisleListView: View {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
             })
             .navigationDestination(isPresented: $showNewStockPage) {
-                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), isCreatingNewStock: true, viewModel: viewModel)
+                MedicineDetailView(viewModel: viewModel,
+                                   isCreatingNewStock: true)
             }
             .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                 Button("OK") { }

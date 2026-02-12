@@ -16,7 +16,6 @@ struct ContentView: View {
         }
         .onAppear {
             authViewModel.startListening()
-            medicineViewModel.user = authViewModel.authService.user
         }
     }
 }
