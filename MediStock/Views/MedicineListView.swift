@@ -6,7 +6,7 @@ struct MedicineListView: View {
     var aisle: String
 
     private var correspondingAisles: [Medicine] {
-        viewModel.medicines.filter { $0.aisle == aisle }
+        viewModel.filterAisle(with: aisle)
     }
 
     var body: some View {
@@ -25,7 +25,7 @@ struct MedicineListView: View {
         }
         .navigationBarTitle(aisle)
         .onChange(of: viewModel.medicines) {
-            if viewModel.medicines.filter({ $0.aisle == aisle }).isEmpty {
+            if correspondingAisles.isEmpty {
                 dismiss()
             }
         }
@@ -33,11 +33,8 @@ struct MedicineListView: View {
 
     private func removeMedicine(offsets: IndexSet) {
         offsets.forEach { index in
-            let medicines = viewModel.medicines.filter { $0.aisle == aisle }
-            guard let occurrence = viewModel.medicines.firstIndex(where: { $0.id == medicines[index].id }) else { return }
-            let id = viewModel.medicines[occurrence].id
             Task(priority: .userInitiated) {
-                await viewModel.deleteMedicines(id: id)
+                await viewModel.deleteMedicines(for: index, and: aisle)
                 viewModel.stopHistoryStream()
             }
         }

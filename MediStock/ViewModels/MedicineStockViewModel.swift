@@ -151,7 +151,10 @@ import Firebase
         }
     }
 
-    func deleteMedicines(id: String?) async {
+    func deleteMedicines(for index: IndexSet.Element, and aisle: String) async {
+        let medicinesFromAisle = filterAisle(with: aisle)
+        guard let occurrence = medicines.firstIndex(where: { $0.id == medicinesFromAisle[index].id }) else { return }
+        let id = medicines[occurrence].id
         guard let id else { return }
         do {
             showLoading = true
@@ -162,6 +165,10 @@ import Firebase
             presentAlertTabViews = true
             alertTabViews = (error as? MedistockError)?.errorDescription
         }
+    }
+
+    func filterAisle(with aisle: String) -> [Medicine] {
+        return medicines.filter({$0.aisle == aisle})
     }
 
     private func prepareAlert(_ error: MedistockError) {
