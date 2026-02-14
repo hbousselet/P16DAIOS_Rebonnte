@@ -3,7 +3,6 @@ import Firebase
 
 @Observable class MedicineStockViewModel {
     var medicines: [Medicine] = []
-    var newMedicine: Medicine = Medicine(name: "Medicine", stock: 0, aisle: "Aisle", userId: "") // need to be cleared when updated in db
     var aisles: [String] = []
     var history: [HistoryEntry] = []
     var showLoading: Bool = false
@@ -62,14 +61,11 @@ import Firebase
     }
 
     func updateStock(by value: Int, for medicine: Medicine) async {
-        print("### Update with new value: \(value)")
         guard let id = medicine.id,
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
         showLoading = true
         var updatedMedicine = medicine // keep the source of truth from the server
-        print("### Stock before: \(updatedMedicine.stock)")
         updatedMedicine.stock += value
-        print("### Stock after: \(updatedMedicine.stock)")
 
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)

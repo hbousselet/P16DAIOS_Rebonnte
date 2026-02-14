@@ -1,29 +1,10 @@
 import SwiftUI
 
 struct MedicineDetailView: View {
-    @Binding var medicine: Medicine
-    @State var isCreatingNewStock: Bool = false
+    @State var medicine: Medicine
     @State var viewModel: MedicineStockViewModel
+    @State var isCreatingNewStock: Bool = false
     @Environment(\.dismiss) var dismiss
-
-    var index: Int?
-
-    init(index: Int? = nil, viewModel: MedicineStockViewModel, isCreatingNewStock: Bool = false) {
-        self.index = index
-        self._viewModel = State(wrappedValue: viewModel)
-        self._isCreatingNewStock = State(wrappedValue: isCreatingNewStock)
-        if let index {
-            self._medicine = Binding(
-                get: { viewModel.medicines[index] },
-                set: { viewModel.medicines[index] = $0 }
-            )
-        } else {
-            self._medicine = Binding(
-                get: { viewModel.newMedicine },
-                set: { viewModel.newMedicine = $0 }
-            )
-        }
-    }
 
     var body: some View {
         ScrollView {
@@ -87,9 +68,8 @@ extension MedicineDetailView {
                         Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: -1, for: medicine)
                         }
-                    } else {
-                        medicine.stock -= 1
                     }
+                    medicine.stock -= 1
                 }) {
                     Image(systemName: "minus.circle")
                         .font(.title)
@@ -111,9 +91,8 @@ extension MedicineDetailView {
                         Task(priority: .userInitiated) {
                             await viewModel.updateStock(by: 1, for: medicine)
                         }
-                    } else {
-                        medicine.stock += 1
                     }
+                    medicine.stock += 1
                 }) {
                     Image(systemName: "plus.circle")
                         .font(.title)

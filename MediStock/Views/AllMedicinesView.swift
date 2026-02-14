@@ -33,8 +33,7 @@ struct AllMedicinesView: View {
                     
                     List {
                         ForEach(filteredAndSortedMedicines, id: \.id) { medicine in
-                            NavigationLink(destination: MedicineDetailView(index: viewModel.medicines.firstIndex(where: { $0.id == medicine.id }),
-                                                                           viewModel: viewModel)) {
+                            NavigationLink(destination: MedicineDetailView(medicine: medicine,viewModel: viewModel)) {
                                 VStack(alignment: .leading) {
                                     Text(medicine.name)
                                         .font(.headline)
@@ -52,8 +51,7 @@ struct AllMedicinesView: View {
                         Image(systemName: "plus")
                     })
                     .navigationDestination(isPresented: $showNewStockPage) {
-                        MedicineDetailView(viewModel: viewModel,
-                                           isCreatingNewStock: true)
+                        MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), viewModel: viewModel, isCreatingNewStock: true)
                     }
                     .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
                         Button("OK") { }

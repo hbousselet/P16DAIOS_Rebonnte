@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct MedicineListView: View {
-    @State var viewModel: MedicineStockViewModel
-
+    @Environment(MedicineStockViewModel.self) private var viewModel
     @Environment(\.dismiss) var dismiss
     var aisle: String
 
@@ -13,9 +12,7 @@ struct MedicineListView: View {
     var body: some View {
         List {
             ForEach(correspondingAisles, id: \.id) { medicine in
-                let index = viewModel.medicines.firstIndex(where: { $0.id == medicine.id })
-
-                NavigationLink(destination: MedicineDetailView(index: index, viewModel: viewModel)) { // ça casse ici
+                NavigationLink(destination: MedicineDetailView(medicine: medicine, viewModel: viewModel)) {
                     VStack(alignment: .leading) {
                         Text(medicine.name)
                             .font(.headline)
