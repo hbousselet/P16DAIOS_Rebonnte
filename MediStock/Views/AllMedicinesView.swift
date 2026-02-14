@@ -74,9 +74,8 @@ struct AllMedicinesView: View {
 
     private func removeMedicine(offsets: IndexSet) {
         offsets.forEach { index in
-            let id = viewModel.medicines[index].id
             Task(priority: .userInitiated) {
-                await viewModel.deleteMedicines(id: id)
+                await viewModel.deleteMedicines(for: index)
             }
         }
     }

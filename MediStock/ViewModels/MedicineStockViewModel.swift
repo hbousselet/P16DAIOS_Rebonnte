@@ -151,10 +151,15 @@ import Firebase
         }
     }
 
-    func deleteMedicines(for index: IndexSet.Element, and aisle: String) async {
-        let medicinesFromAisle = filterAisle(with: aisle)
-        guard let occurrence = medicines.firstIndex(where: { $0.id == medicinesFromAisle[index].id }) else { return }
-        let id = medicines[occurrence].id
+    func deleteMedicines(for index: IndexSet.Element, and aisle: String? = nil) async {
+        let id: String?
+        if let aisle {
+            let medicinesFromAisle = filterAisle(with: aisle)
+            guard let occurrence = medicines.firstIndex(where: { $0.id == medicinesFromAisle[index].id }) else { return }
+            id = medicines[occurrence].id
+        } else {
+            id = medicines[index].id
+        }
         guard let id else { return }
         do {
             showLoading = true
