@@ -11,7 +11,7 @@ struct ContentView: View {
                     .environment(medicineViewModel)
                     .environment(authViewModel)
             } else {
-                LoginView(authViewModel: AuthentificationViewModel())
+                LoginView(authViewModel: authViewModel)
             }
         }
         .onAppear {
