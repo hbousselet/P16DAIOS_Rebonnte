@@ -14,7 +14,7 @@ struct ContentView: View {
                 LoginView(authViewModel: authViewModel)
             }
         }
-        .onAppear {
+        .task {
             authViewModel.startListening()
         }
     }

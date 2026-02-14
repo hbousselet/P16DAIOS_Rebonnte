@@ -18,7 +18,7 @@ struct MainTabView: View {
                         Text("All Medicines")
                     }
         }
-        .onAppear {
+        .task {
             medicineViewModel.user = authViewModel.authService.user
             Task(priority: .userInitiated) {
                 await medicineViewModel.fetchMedicines()
