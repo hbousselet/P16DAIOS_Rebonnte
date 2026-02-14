@@ -81,29 +81,6 @@ struct AllMedicinesView: View {
     }
 
     var filteredAndSortedMedicines: [Medicine] {
-        var medicines = viewModel.medicines
-
-        if !filterText.isEmpty {
-            medicines = medicines.filter { $0.name.lowercased().contains(filterText.lowercased()) }
-        }
-
-        switch sortOption {
-        case .name:
-            medicines.sort { $0.name.lowercased() < $1.name.lowercased() }
-        case .stock:
-            medicines.sort { $0.stock < $1.stock }
-        case .none:
-            break
-        }
-
-        return medicines
+        viewModel.filterAndSortMedicines(filterText: filterText, sortOption: sortOption)
     }
-}
-
-enum SortOption: String, CaseIterable, Identifiable {
-    case none
-    case name
-    case stock
-
-    var id: String { self.rawValue }
 }
