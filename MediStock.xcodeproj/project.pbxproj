@@ -69,6 +69,7 @@
 				ViewModels/AuthentificationViewModel.swift,
 				ViewModels/MedicineStockViewModel.swift,
 				Views/AisleListView.swift,
+				Views/AlertViewModifier.swift,
 				Views/AllMedicinesView.swift,
 				Views/ContentView.swift,
 				Views/LoadingView.swift,
@@ -83,6 +84,8 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A32007972EBF2AB50056CB0F /* MediStock */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (A32007A82EBF2AB50056CB0F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = MediStock; sourceTree = "<group>"; };
+		A397977F2F4211AC00533C5D /* FirebaseMocks */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FirebaseMocks; sourceTree = "<group>"; };
+		A39797822F4215B600533C5D /* ViewModelTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ViewModelTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +147,8 @@
 		53E0D8A62C06084900DE1134 /* MediStockTests */ = {
 			isa = PBXGroup;
 			children = (
+				A39797822F4215B600533C5D /* ViewModelTests */,
+				A397977F2F4211AC00533C5D /* FirebaseMocks */,
 				53E0D8A72C06084900DE1134 /* MediStockTests.swift */,
 			);
 			path = MediStockTests;
@@ -203,6 +208,10 @@
 			);
 			dependencies = (
 				53E0D8A52C06084900DE1134 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A397977F2F4211AC00533C5D /* FirebaseMocks */,
+				A39797822F4215B600533C5D /* ViewModelTests */,
 			);
 			name = MediStockTests;
 			productName = MediStockTests;

@@ -15,9 +15,13 @@ import Firebase
 
     var user: AuthUserProtocol?
 
-    private var firestoreService: FirestoreService = FirestoreService()
+    private var firestoreService: FirestoreProtocol
     private var medicineStreamTask: Task<Void, Never>?
     private var historyStreamTask: Task<Void, Never>?
+
+    init(firestoreService: FirestoreProtocol = FirestoreService()) {
+        self.firestoreService = firestoreService
+    }
 
     @MainActor
     func fetchMedicines() async {
@@ -26,7 +30,7 @@ import Firebase
         medicineStreamTask = Task {
             showLoading = true
             do {
-                for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines) {
+                for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines, element: nil) {
                     guard !Task.isCancelled else { break }
                     medicines = medicine
                     aisles = Array(Set(medicines.map { $0.aisle })).sorted()
@@ -124,10 +128,6 @@ import Firebase
             prepareAlert(MedistockError.emptyMedicineName)
             return false
         }
-        if medicine.aisle.isEmpty {
-            prepareAlert(MedistockError.emptyAisleName)
-            return false
-        }
         if medicine.stock == 0 {
             prepareAlert(MedistockError.emptyStockMedicineCreation)
             return false
@@ -139,7 +139,7 @@ import Firebase
         do {
             showLoading = true
             let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return false}
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return false }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
             showLoading = false
             return true

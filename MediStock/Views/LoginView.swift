@@ -27,14 +27,6 @@ struct LoginView: View {
             }
         }
         .padding()
-        .alert("Alert !", isPresented: $authViewModel.alertIsPresented, actions: {
-            Button("OK") { }
-        }, message: {
-            if let error = authViewModel.alert {
-                Text(error)
-            } else {
-                Text("Unknown Error")
-            }
-        })
+        .customAlert(presentAlert: $authViewModel.alertIsPresented, alertMessage: authViewModel.alert)
     }
 }

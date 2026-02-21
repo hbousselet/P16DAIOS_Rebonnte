@@ -19,10 +19,6 @@ import Foundation
         self.authService = sessionStore
     }
 
-    func startListening() {
-        authService.listen()
-    }
-
     func signIn() async {
         guard isValidEmail(email) else {
             alertIsPresented = true
@@ -32,10 +28,9 @@ import Foundation
 
         guard !password.isEmpty else {
             alertIsPresented = true
-            alert = MedistockError.invalidPassword.errorDescription
+            alert = MedistockError.emptyPassword.errorDescription
             return
         }
-
         do {
             _ = try await authService.signIn(email: email, password: password)
         } catch {
@@ -67,9 +62,9 @@ import Foundation
         do {
             _ = try authService.signOut()
         } catch {
+            alertIsPresented = true
             alert = (error as? MedistockError)?.errorDescription
         }
-
     }
 
     private func isValidEmail(_ email: String) -> Bool {

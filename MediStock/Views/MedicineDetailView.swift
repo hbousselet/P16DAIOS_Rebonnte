@@ -25,16 +25,8 @@ struct MedicineDetailView: View {
             .padding(.vertical)
         }
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
-        .alert("Alert !", isPresented: $viewModel.presentAlertDetailsView, actions: {
-            Button("OK") {
-                viewModel.removeAlert()
-            }
-        }, message: {
-            if let error = viewModel.alertDetailsView {
-                Text(error)
-            } else {
-                Text("Unknown Error")
-            }
+        .customAlert(presentAlert: $viewModel.presentAlertDetailsView, alertMessage: viewModel.alertDetailsView, removeAlert: {
+            viewModel.removeAlert()
         })
     }
 }

@@ -4,7 +4,6 @@ import FirebaseAuth
 
 protocol AuthFirebaseProtocol {
     var user: User? { get }
-    func listen()
     func signIn(email: String, password: String) async throws
     func signUp(email: String, password: String) async throws
     func signOut() throws
@@ -22,11 +21,7 @@ extension FirebaseAuth.User : AuthUserProtocol {}
     private var handle: AuthStateDidChangeListenerHandle?
     private var auth = Auth.auth()
 
-    deinit {
-        unbind()
-    }
-
-    public func listen() {
+    init() {
         handle = auth.addStateDidChangeListener { (auth, user) in
             if let user = user {
                 self.user = User(uid: user.uid, email: user.email)
@@ -34,6 +29,10 @@ extension FirebaseAuth.User : AuthUserProtocol {}
                 self.user = nil
             }
         }
+    }
+
+    deinit {
+        unbind()
     }
 
     public func signIn(email: String, password: String) async throws {

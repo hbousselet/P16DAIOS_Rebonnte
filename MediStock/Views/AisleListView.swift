@@ -34,18 +34,11 @@ struct AisleListView: View {
             .navigationDestination(isPresented: $showNewStockPage) {
                 MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), viewModel: viewModel, isCreatingNewStock: true)
             }
-            .alert("Alert !", isPresented: $viewModel.presentAlertTabViews, actions: {
-                Button("OK") { }
-                Button("Retry fetch") {
-                    Task(priority: .userInitiated) {
-                        await viewModel.fetchMedicines()
-                    }
-                }
-            }, message: {
-                if let error = viewModel.alertTabViews {
-                    Text(error)
-                } else {
-                    Text("Unknown Error")
+            .customAlert(presentAlert: $viewModel.presentAlertTabViews,
+                         alertMessage: viewModel.alertTabViews,
+                         needSecondButton: true, secondButtonAction: {
+                Task(priority: .userInitiated) {
+                    await viewModel.fetchMedicines()
                 }
             })
         }
