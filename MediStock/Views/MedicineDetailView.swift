@@ -12,9 +12,12 @@ struct MedicineDetailView: View {
                 Text(medicine.name)
                     .font(.largeTitle)
                     .padding(.top, 20)
+                    .accessibilityAddTraits(.isHeader)
                 medicineNameSection
+                    .accessibilityElement(children: .combine)
                 medicineStockSection
                 medicineAisleSection
+                    .accessibilityElement(children: .combine)
                 if isCreatingNewStock {
                     createButton
                         .padding(.horizontal)
