@@ -25,11 +25,15 @@ struct AisleListView: View {
                 showNewStockPage.toggle()
             }) {
                 Image(systemName: "plus")
+                    .accessibilityLabel("Add new medicine")
+                    .accessibilityAddTraits(.isButton)
             })
             .navigationBarItems(leading: Button(action: {
                 authViewModel.signOut()
             }) {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
+                    .accessibilityLabel("Signout")
+                    .accessibilityAddTraits(.isButton)
             })
             .navigationDestination(isPresented: $showNewStockPage) {
                 MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), viewModel: viewModel, isCreatingNewStock: true)
