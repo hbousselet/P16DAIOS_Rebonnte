@@ -9,6 +9,7 @@ struct LoginView: View {
                 .font(.title)
                 .padding()
                 .accessibilityAddTraits(.isHeader)
+            Spacer()
             TextField("Email", text: $authViewModel.email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .accessibilityLabel("Email field")
@@ -17,20 +18,33 @@ struct LoginView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .accessibilityLabel("Password field")
                 .padding()
-            Button(action: {
-                Task(priority: .userInitiated) {
-                    await authViewModel.signIn()
+            HStack {
+                Button(action: {
+                    Task(priority: .userInitiated) {
+                        await authViewModel.signIn()
+                    }
+                }) {
+                    Text("Login")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
-            }) {
-                Text("Login")
-            }
-            Button(action: {
-                Task(priority: .userInitiated) {
-                    await authViewModel.signUp()
+                Button(action: {
+                    Task(priority: .userInitiated) {
+                        await authViewModel.signUp()
+                    }
+                }) {
+                    Text("Sign Up")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
-            }) {
-                Text("Sign Up")
             }
+            Spacer()
         }
         .padding()
         .customAlert(presentAlert: $authViewModel.alertIsPresented, alertMessage: authViewModel.alert)
