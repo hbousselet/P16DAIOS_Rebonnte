@@ -1,5 +1,5 @@
 //
-//  MedicineStockViewModelMock.swift
+//  MedicineStockViewModelTests.swift
 //  MediStockTests
 //
 //  Created by Hugues BOUSSELET on 15/02/2026.

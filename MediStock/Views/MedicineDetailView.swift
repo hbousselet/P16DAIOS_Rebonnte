@@ -16,6 +16,7 @@ struct MedicineDetailView: View {
                 medicineNameSection
                     .accessibilityElement(children: .combine)
                 medicineStockSection
+                    .accessibilityElement(children: .combine)
                 medicineAisleSection
                     .accessibilityElement(children: .combine)
                 if isCreatingNewStock {
@@ -78,9 +79,9 @@ extension MedicineDetailView {
                             }
                         }
                     }
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .keyboardType(.numberPad)
-                .frame(width: 100)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.numberPad)
+                    .frame(width: 100)
                 Button(action: {
                     if !isCreatingNewStock {
                         Task(priority: .userInitiated) {
@@ -96,7 +97,10 @@ extension MedicineDetailView {
             }
             .padding(.bottom, 10)
         }
-        .padding(.horizontal)
+        .accessibilityRepresentation {
+            Stepper("\(medicine.stock) stocks", value: $medicine.stock, in: 0...10000, step: 1)
+                .padding(.horizontal)
+        }
     }
 
     private var medicineAisleSection: some View {
