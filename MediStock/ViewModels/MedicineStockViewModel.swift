@@ -69,11 +69,10 @@ import Firebase
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
         showLoading = true
         var updatedMedicine = medicine // keep the source of truth from the server
-        updatedMedicine.stock += value
 
         do {
             try await firestoreService.update(model: updatedMedicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(by: value, action: .operation, id: id, for: medicines[index]) else { return }
+            guard let newHistory = await prepareHistory(by: value == 0 ? medicine.stock : value, action: .operation, id: id, for: medicines[index]) else { return }
             let _ = try await firestoreService.create(model: newHistory, reference: .history)
             showLoading = false
         } catch {
@@ -93,11 +92,13 @@ import Firebase
                   let id,
                   let userUID = user?.uid,
                   let email = user?.email else { return nil }
+            let oldValue: Int = medicine.stock - value
+
             return HistoryEntry(medicineId: id,
                                 userId: userUID,
                                 userEmail: email,
                                 action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
-                                details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
+                                details: "Stock changed from \(oldValue) to \(medicine.stock)")
         case .create:
             guard let id,
                   let userUID = user?.uid,
