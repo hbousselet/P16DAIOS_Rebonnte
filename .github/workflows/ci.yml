@@ -1,15 +1,12 @@
 name: iOS Build and Test
-
 on:
   pull_request:
     branches:
       - main
-
 jobs:
   test:
     name: iOS Build and Test
     runs-on: macos-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +15,7 @@ jobs:
         run: |
           echo "Xcode version:"
           xcodebuild -version
-          echo "\nAvailable simulators:"
+          echo "Available simulators:"
           xcrun simctl list devices available | grep "iPhone"
 
       - name: Clean DerivedData
@@ -31,9 +28,10 @@ jobs:
             -scheme MediStock \
             -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -skip-testing:MediStockUITests \
+            -resultBundlePath test-results.xcresult \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload test bundle
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
