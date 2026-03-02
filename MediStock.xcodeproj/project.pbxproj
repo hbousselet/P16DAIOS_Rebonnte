@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		53E0D8A82C06084900DE1134 /* MediStockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E0D8A72C06084900DE1134 /* MediStockTests.swift */; };
-		53E0D8B22C06084900DE1134 /* MediStockUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E0D8B12C06084900DE1134 /* MediStockUITests.swift */; };
-		53E0D8B42C06084900DE1134 /* MediStockUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E0D8B32C06084900DE1134 /* MediStockUITestsLaunchTests.swift */; };
 		53E0D8C22C06092E00DE1134 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 53E0D8C12C06092E00DE1134 /* FirebaseAnalytics */; };
 		53E0D8C42C06092E00DE1134 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 53E0D8C32C06092E00DE1134 /* FirebaseAnalyticsOnDeviceConversion */; };
 		53E0D8C62C06092E00DE1134 /* FirebaseAnalyticsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 53E0D8C52C06092E00DE1134 /* FirebaseAnalyticsSwift */; };
@@ -43,10 +40,7 @@
 /* Begin PBXFileReference section */
 		53E0D8932C06084700DE1134 /* MediStock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MediStock.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		53E0D8A32C06084900DE1134 /* MediStockTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MediStockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		53E0D8A72C06084900DE1134 /* MediStockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediStockTests.swift; sourceTree = "<group>"; };
 		53E0D8AD2C06084900DE1134 /* MediStockUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MediStockUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		53E0D8B12C06084900DE1134 /* MediStockUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediStockUITests.swift; sourceTree = "<group>"; };
-		53E0D8B32C06084900DE1134 /* MediStockUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediStockUITestsLaunchTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -129,7 +123,6 @@
 			children = (
 				A32007972EBF2AB50056CB0F /* MediStock */,
 				53E0D8A62C06084900DE1134 /* MediStockTests */,
-				53E0D8B02C06084900DE1134 /* MediStockUITests */,
 				53E0D8942C06084700DE1134 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -149,18 +142,8 @@
 			children = (
 				A39797822F4215B600533C5D /* ViewModelTests */,
 				A397977F2F4211AC00533C5D /* FirebaseMocks */,
-				53E0D8A72C06084900DE1134 /* MediStockTests.swift */,
 			);
 			path = MediStockTests;
-			sourceTree = "<group>";
-		};
-		53E0D8B02C06084900DE1134 /* MediStockUITests */ = {
-			isa = PBXGroup;
-			children = (
-				53E0D8B12C06084900DE1134 /* MediStockUITests.swift */,
-				53E0D8B32C06084900DE1134 /* MediStockUITestsLaunchTests.swift */,
-			);
-			path = MediStockUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -318,7 +301,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				53E0D8A82C06084900DE1134 /* MediStockTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,8 +308,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				53E0D8B42C06084900DE1134 /* MediStockUITestsLaunchTests.swift in Sources */,
-				53E0D8B22C06084900DE1134 /* MediStockUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,7 +507,6 @@
 		53E0D8BB2C06084900DE1134 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -546,7 +525,6 @@
 		53E0D8BC2C06084900DE1134 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -565,7 +543,6 @@
 		53E0D8BE2C06084900DE1134 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -582,7 +559,6 @@
 		53E0D8BF2C06084900DE1134 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
