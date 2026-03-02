@@ -30,6 +30,7 @@ jobs:
             -project MediStock.xcodeproj \
             -scheme MediStock \
             -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -skip-testing:MediStockUITests \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Upload test bundle

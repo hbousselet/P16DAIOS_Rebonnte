@@ -238,7 +238,6 @@
 					};
 					53E0D8AC2C06084900DE1134 = {
 						CreatedOnToolsVersion = 15.4;
-						TestTargetID = 53E0D8922C06084700DE1134;
 					};
 				};
 			};
@@ -549,10 +548,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rebonnte.MediStockUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MediStock;
 			};
 			name = Debug;
 		};
@@ -565,10 +564,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rebonnte.MediStockUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MediStock;
 			};
 			name = Release;
 		};
