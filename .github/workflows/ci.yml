@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: macos-14
+    runs-on: macos-latest
     
     steps:
       - name: Checkout
@@ -21,15 +21,6 @@ jobs:
           xcodebuild -version
           echo "\nAvailable simulators:"
           xcrun simctl list devices available | grep "iPhone"
-      
-      - name: Install dependencies
-        run: |
-          if [ -f Podfile ]; then
-            echo "Installing CocoaPods dependencies..."
-            sudo gem install cocoapods
-            pod install
-          fi
-          brew install xcbeautify
       
       - name: Clean DerivedData
         run: rm -rf ~/Library/Developer/Xcode/DerivedData
@@ -49,9 +40,8 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
             -skipPackagePluginValidation \
-            -skipMacroValidation \
-            | xcbeautify
-            
+            -skipMacroValidation
+
       # Backup : upload comme artifact
       - name: Upload test bundle
         uses: actions/upload-artifact@v4
