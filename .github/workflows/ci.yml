@@ -51,16 +51,7 @@ jobs:
             -skipPackagePluginValidation \
             -skipMacroValidation \
             | xcbeautify
-      
-      # Publier dans la PR
-      - name: Publish test results to PR
-        uses: kishikawakatsumi/xcresulttool@v1
-        with:
-          path: test-results.xcresult
-          token: ${{ secrets.GITHUB_TOKEN }}
-        if: always()
-        continue-on-error: true
-      
+            
       # Backup : upload comme artifact
       - name: Upload test bundle
         uses: actions/upload-artifact@v4
