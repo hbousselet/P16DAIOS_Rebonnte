@@ -11,9 +11,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Select Xcode version
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
       
       - name: Show environment
         run: |
@@ -27,20 +24,11 @@ jobs:
       
       - name: Run tests
         run: |
-          set -o pipefail
           xcodebuild test \
-            -project MediStock.xcodeproj \
-            -scheme MediStock \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
-            -derivedDataPath DerivedData \
-            -resultBundlePath test-results.xcresult \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            -skipPackagePluginValidation \
-            -skipMacroValidation
+        -project MediStock.xcodeproj \
+        -scheme MediStock \
+        -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+        CODE_SIGNING_ALLOWED=NO
 
       # Backup : upload comme artifact
       - name: Upload test bundle
