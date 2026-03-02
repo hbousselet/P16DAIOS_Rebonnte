@@ -1,15 +1,12 @@
 name: iOS Build and Test
-
 on:
   pull_request:
     branches:
       - main
-
 jobs:
   test:
     name: iOS Build and Test
     runs-on: macos-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,7 +15,7 @@ jobs:
         run: |
           echo "Xcode version:"
           xcodebuild -version
-          echo "\nAvailable simulators:"
+          echo "Available simulators:"
           xcrun simctl list devices available | grep "iPhone"
 
       - name: Clean DerivedData
@@ -31,11 +28,64 @@ jobs:
             -scheme MediStock \
             -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -skip-testing:MediStockUITests \
+            -resultBundlePath test-results.xcresult \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload test bundle
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
           path: test-results.xcresult
+
+      - name: Generate test report
+        if: always()
+        run: |
+          echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Extract test summary from xcresult
+          xcrun xcresulttool get test-results summary \
+            --path test-results.xcresult \
+            --compact > test-summary.json 2>/dev/null
+
+          if [ -f test-summary.json ]; then
+            TOTAL=$(cat test-summary.json | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          stats = data.get('testPlanSummary', {}).get('statistics', {})
+          total = stats.get('totalTestCount', 0)
+          passed = stats.get('passedTestCount', 0)
+          failed = stats.get('failedTestCount', 0)
+          skipped = stats.get('skippedTestCount', 0)
+          print(f'{total},{passed},{failed},{skipped}')
+          " 2>/dev/null || echo "0,0,0,0")
+
+            IFS=',' read -r TOTAL PASSED FAILED SKIPPED <<< "$TOTAL"
+
+            if [ "$FAILED" -gt 0 ]; then
+              echo "### ❌ Tests Failed" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### ✅ All Tests Passed" >> $GITHUB_STEP_SUMMARY
+            fi
+
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total  | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Could not parse xcresult. Check the uploaded artifact." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Generate code coverage report
+        if: always()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📊 Code Coverage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          xcrun xccov view --report test-results.xcresult 2>/dev/null >> $GITHUB_STEP_SUMMARY || echo "Coverage data not available" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
