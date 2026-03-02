@@ -1,0 +1,67 @@
+name: iOS Build and Test
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Show environment
+        run: |
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "\nAvailable simulators:"
+          xcrun simctl list devices available | grep "iPhone"
+      
+      - name: Install dependencies
+        run: |
+          if [ -f Podfile ]; then
+            echo "Installing CocoaPods dependencies..."
+            sudo gem install cocoapods
+            pod install
+          fi
+          brew install xcbeautify
+      
+      - name: Clean DerivedData
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData
+      
+      - name: Run tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project EPCollaboratif.xcodeproj \
+            -scheme EPCollaboratif \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro' \
+            -derivedDataPath DerivedData \
+            -resultBundlePath test-results.xcresult \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            | xcbeautify
+      
+      # Publier dans la PR
+      - name: Publish test results to PR
+        uses: kishikawakatsumi/xcresulttool@v1
+        with:
+          path: test-results.xcresult
+          token: ${{ secrets.GITHUB_TOKEN }}
+        if: always()
+        continue-on-error: true
+      
+      # Backup : upload comme artifact
+      - name: Upload test bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xcresult
+        if: always()
