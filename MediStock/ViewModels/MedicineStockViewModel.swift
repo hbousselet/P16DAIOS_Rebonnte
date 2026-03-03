@@ -34,6 +34,7 @@ import Firebase
                     guard !Task.isCancelled else { break }
                     medicines = medicine
                     aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+                    try await Task.sleep(for: .milliseconds(500))
                     showLoading = false
                 }
             } catch {

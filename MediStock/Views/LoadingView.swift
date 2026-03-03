@@ -8,10 +8,11 @@
 import SwiftUI
 
 struct LoadingView: View {
+    @Environment(\.colorScheme) var colorScheme
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(.black)
+                .fill(colorScheme == .light ? .gray.opacity(0.7) : .white)
                 .opacity(0.75)
                 .ignoresSafeArea()
 
@@ -21,7 +22,7 @@ struct LoadingView: View {
             }
             .background {
                 RoundedRectangle(cornerRadius: 20)
-                .fill(.white)
+                    .fill(colorScheme == .light ? .white : .black)
                 .frame(width: 200, height: 200)
             }
             .offset(y: -70)
