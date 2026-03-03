@@ -39,7 +39,7 @@ extension FirebaseAuth.User : AuthUserProtocol {}
         do {
             try await Auth.auth().signIn(withEmail: email, password: password)
         } catch {
-            throw MedistockError.signUpError(error.localizedDescription)
+            throw MedistockError.signInError(error.localizedDescription)
         }
     }
 
@@ -47,7 +47,7 @@ extension FirebaseAuth.User : AuthUserProtocol {}
         do {
             try await Auth.auth().createUser(withEmail: email, password: password)
         } catch {
-            throw MedistockError.signInError(error.localizedDescription)
+            throw MedistockError.signUpError(error.localizedDescription)
         }
     }
 
