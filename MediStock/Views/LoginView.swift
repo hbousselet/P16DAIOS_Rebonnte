@@ -13,6 +13,8 @@ struct LoginView: View {
             TextField("Email", text: $authViewModel.email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .accessibilityLabel("Email field")
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
                 .padding()
             SecureField("Password", text: $authViewModel.password)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
