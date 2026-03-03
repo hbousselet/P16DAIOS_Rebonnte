@@ -1,24 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var session: SessionStore
+    @State private var authViewModel = AuthentificationViewModel()
+    @State private var medicineViewModel = MedicineStockViewModel()
 
     var body: some View {
         Group {
-            if session.session != nil {
+            if authViewModel.authService.user != nil {
                 MainTabView()
+                    .environment(medicineViewModel)
+                    .environment(authViewModel)
             } else {
-                LoginView()
+                LoginView(authViewModel: authViewModel)
             }
         }
-        .onAppear {
-            session.listen()
-        }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView().environmentObject(SessionStore())
     }
 }

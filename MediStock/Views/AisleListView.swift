@@ -1,41 +1,50 @@
 import SwiftUI
 
 struct AisleListView: View {
-    @ObservedObject var viewModel = MedicineStockViewModel()
+    @State var viewModel: MedicineStockViewModel
+    @State var showNewStockPage: Bool = false
+    @Environment(AuthentificationViewModel.self) private var authViewModel
 
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(viewModel.aisles, id: \.self) { aisle in
-                    NavigationLink(destination: MedicineListView(aisle: aisle)) {
-                        Text(aisle)
+        NavigationStack {
+            ZStack {
+                if viewModel.showLoading {
+                    LoadingView()
+                        .zIndex(1)
+                }
+                List {
+                    ForEach(viewModel.aisles, id: \.self) { aisle in
+                        NavigationLink(destination: MedicineListView(aisle: aisle)) {
+                            Text(aisle)
+                        }
                     }
                 }
             }
             .navigationBarTitle("Aisles")
             .navigationBarItems(trailing: Button(action: {
-                Task {
-                    await viewModel.addRandomMedicine(user: "test_user") // Remplacez par l'utilisateur actuel
-                }
+                showNewStockPage.toggle()
             }) {
                 Image(systemName: "plus")
+                    .accessibilityLabel("Add new medicine")
+                    .accessibilityAddTraits(.isButton)
             })
             .navigationBarItems(leading: Button(action: {
-                //
+                authViewModel.signOut()
             }) {
                 Image(systemName: "person.crop.circle.fill.badge.minus")
+                    .accessibilityLabel("Signout")
+                    .accessibilityAddTraits(.isButton)
+            })
+            .navigationDestination(isPresented: $showNewStockPage) {
+                MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), viewModel: viewModel, isCreatingNewStock: true)
+            }
+            .customAlert(presentAlert: $viewModel.presentAlertTabViews,
+                         alertMessage: viewModel.alertTabViews,
+                         needSecondButton: true, secondButtonAction: {
+                Task(priority: .userInitiated) {
+                    await viewModel.fetchMedicines()
+                }
             })
         }
-        .onAppear {
-            Task {
-                await viewModel.fetchMedicines()
-            }
-        }
-    }
-}
-
-struct AisleListView_Previews: PreviewProvider {
-    static var previews: some View {
-        AisleListView()
     }
 }

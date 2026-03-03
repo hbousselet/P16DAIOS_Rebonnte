@@ -1,13 +1,18 @@
 import SwiftUI
 
 struct MedicineListView: View {
-    @ObservedObject var viewModel = MedicineStockViewModel()
+    @Environment(MedicineStockViewModel.self) private var viewModel
+    @Environment(\.dismiss) var dismiss
     var aisle: String
+
+    private var correspondingAisles: [Medicine] {
+        viewModel.filterAisle(with: aisle)
+    }
 
     var body: some View {
         List {
-            ForEach(viewModel.medicines.filter { $0.aisle == aisle }, id: \.id) { medicine in
-                NavigationLink(destination: MedicineDetailView(medicine: medicine)) {
+            ForEach(correspondingAisles, id: \.id) { medicine in
+                NavigationLink(destination: MedicineDetailView(medicine: medicine, viewModel: viewModel)) {
                     VStack(alignment: .leading) {
                         Text(medicine.name)
                             .font(.headline)
@@ -16,18 +21,22 @@ struct MedicineListView: View {
                     }
                 }
             }
+            .onDelete(perform: removeMedicine)
         }
         .navigationBarTitle(aisle)
-        .onAppear {
-            Task(priority: .background) {
-                await viewModel.fetchMedicines()
+        .onChange(of: viewModel.medicines) {
+            if correspondingAisles.isEmpty {
+                dismiss()
             }
         }
     }
-}
 
-struct MedicineListView_Previews: PreviewProvider {
-    static var previews: some View {
-        MedicineListView(aisle: "Aisle 1").environmentObject(SessionStore())
+    private func removeMedicine(offsets: IndexSet) {
+        offsets.forEach { index in
+            Task(priority: .userInitiated) {
+                await viewModel.deleteMedicines(for: index, and: aisle)
+                viewModel.stopHistoryStream()
+            }
+        }
     }
 }

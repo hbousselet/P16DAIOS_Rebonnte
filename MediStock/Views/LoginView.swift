@@ -1,35 +1,52 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""
-    @EnvironmentObject var session: SessionStore
+    @State var authViewModel: AuthentificationViewModel
 
     var body: some View {
         VStack {
-            TextField("Email", text: $email)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+            Text("Authentication")
+                .font(.title)
                 .padding()
-            SecureField("Password", text: $password)
+                .accessibilityAddTraits(.isHeader)
+            Spacer()
+            TextField("Email", text: $authViewModel.email)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibilityLabel("Email field")
                 .padding()
-            Button(action: {
-                session.signIn(email: email, password: password)
-            }) {
-                Text("Login")
+            SecureField("Password", text: $authViewModel.password)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibilityLabel("Password field")
+                .padding()
+            HStack {
+                Button(action: {
+                    Task(priority: .userInitiated) {
+                        await authViewModel.signIn()
+                    }
+                }) {
+                    Text("Login")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                Button(action: {
+                    Task(priority: .userInitiated) {
+                        await authViewModel.signUp()
+                    }
+                }) {
+                    Text("Sign Up")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
             }
-            Button(action: {
-                session.signUp(email: email, password: password)
-            }) {
-                Text("Sign Up")
-            }
+            Spacer()
         }
         .padding()
-    }
-}
-
-struct LoginView_Previews: PreviewProvider {
-    static var previews: some View {
-        LoginView().environmentObject(SessionStore())
+        .customAlert(presentAlert: $authViewModel.alertIsPresented, alertMessage: authViewModel.alert)
     }
 }

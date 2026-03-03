@@ -7,35 +7,25 @@
 
 import Foundation
 import Firebase
+import FirebaseAuth
 
-// créer un protocol pour FirestoreService
-// créer un enum pour les erreurs
-// remove la variable medicines
-// mieux hierarchiser cette classe
-// mettre FirestoreService en actor ?
 
-enum CollectionReference: String {
-    case medicines, history
-
-    var id: String {
-        switch self {
-        case .medicines: return "medicineId"
-        case .history: return "historyId"
-        }
-    }
-}
-
-protocol FirestoreProtocol {
+protocol FirestoreProtocol: Actor {
+    func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String?
+    func delete(id: String, reference: CollectionReference) async throws
     func stream<T: Decodable & Sendable>(
         reference: CollectionReference,
         element: String?
-    ) -> AsyncStream<[T]>
-    func delete(id: String) async throws
+    ) -> AsyncThrowingStream<[T], any Error>
     func update(model: ModelProtocol, reference: CollectionReference) async throws
 }
 
-class FirestoreService: FirestoreProtocol {
-    private var db: Firestore
+actor FirestoreService: FirestoreProtocol {
+    private let db: Firestore
+
+    private var currentUser: String {
+        FirebaseAuth.Auth.auth().currentUser?.uid ?? ""
+    }
 
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
@@ -44,14 +34,19 @@ class FirestoreService: FirestoreProtocol {
     public func stream<T: Decodable & Sendable>(
         reference: CollectionReference,
         element: String? = nil
-    ) -> AsyncStream<[T]> {
-        AsyncStream { continuation in
+    ) -> AsyncThrowingStream<[T], any Error> {
+        AsyncThrowingStream { continuation in
             let listenerRegistration = self.listener(
                 for: T.self,
                 reference: reference,
                 element: element
-            ) { items in
-                continuation.yield(items)
+            ) { result in
+                do {
+                    let items = try result.get()
+                    continuation.yield(items)
+                } catch {
+                    continuation.finish(throwing: error)
+                }
             }
             
             continuation.onTermination = { @Sendable _ in
@@ -64,76 +59,74 @@ class FirestoreService: FirestoreProtocol {
         for type: T.Type,
         reference: CollectionReference,
         element: String? = nil,
-        handler: @escaping ([T]) -> Void
+        handler: @escaping (Result<[T], Error>) -> Void
     ) -> ListenerRegistration {
-        if let element {
-            return db.collection(reference.rawValue)
-                .whereField(reference.id, isEqualTo: element)
-                .addSnapshotListener { (querySnapshot, error) in
+        var field = db.collection(reference.rawValue)
+                .whereField(reference.user, isEqualTo: currentUser)
+
+            if let element {
+                field = field.whereField(reference.id, isEqualTo: element)
+            }
+                return field.addSnapshotListener { (querySnapshot, error) in
                     if let error = error {
-                        print("Error getting documents: \(error)")
-                        handler([])
+                        handler(.failure(MedistockError.addListenerError(error.localizedDescription)))
                     } else {
                         let items = querySnapshot?.documents.compactMap { document in
                             return try? document.data(as: T.self)
                         } ?? []
-                        handler(items)
+                        handler(.success(items))
                     }
                 }
-        } else {
-            return db.collection(reference.rawValue)
-                .addSnapshotListener { (querySnapshot, error) in
-                    if let error = error {
-                        print("Error getting documents: \(error)")
-                        handler([])
-                    } else {
-                        let items = querySnapshot?.documents.compactMap { document in
-                            return try? document.data(as: T.self)
-                        } ?? []
-                        handler(items)
-                    }
-                }
+    }
+
+    public func update(model: any ModelProtocol, reference: CollectionReference) async throws {
+        switch reference {
+        case .medicines:
+            guard let id = model.id else { return }
+            do {
+                try await db.collection(reference.rawValue)
+                    .document(id)
+                    .setData(model.dictionary)
+            } catch {
+                throw MedistockError.updateError(error.localizedDescription)
+            }
+        default:
+            return
         }
     }
-    
-    func update(model: any ModelProtocol, reference: CollectionReference) async throws {
-        guard let id = model.id else { return }
-        try await db.collection(reference.rawValue).document(id)
-            .setData(model.dictionary)
+
+    public func create(model: any ModelProtocol, reference: CollectionReference) async throws -> String? {
+        do {
+            let document = try await db.collection(reference.rawValue)
+                .addDocument(data: model.dictionary)
+            return document.documentID
+        } catch {
+            throw MedistockError.createError(error.localizedDescription)
+        }
     }
 
-    public func delete(id: String) async throws {
-        try await db.collection("medicines").document(id)
-            .delete()
-    }
-}
+    public func delete(id: String, reference: CollectionReference) async throws {
+        // as we can't use the delete cascade strategy inside Firestore (not for freemium account),
+        // we decided to fetch all the documents having this medicine_id then to loop over to delete them
+        do {
+            try await db.collection(reference.rawValue)
+                .document(id)
+                .delete()
+            if reference == .medicines {
+                // get documents
+                let documents = try await db.collection(CollectionReference.history.rawValue)
+                    .whereField(reference.id, isEqualTo: id)
+                    .getDocuments()
 
-// MARK: Update stock
-extension FirestoreService {
-    public func updateStock(_ medicine: Medicine, by amount: Int, user: String) async throws {
-        guard let id = medicine.id else { return }
-        let newStock = medicine.stock + amount
-         try await db.collection("medicines").document(id)
-            .updateData([
-            "stock": newStock
-        ])
-    }
-}
-
-// MARK: Update Medicine
-extension FirestoreService {
-    public func updateMedicine(_ medicine: Medicine, user: String) async throws {
-        guard let id = medicine.id else { return }
-        try await  db.collection("medicines").document(id)
-            .setData(medicine.dictionary)
-    }
-}
-
-// MARK: Add history
-extension FirestoreService {
-    public func addHistory(action: String, user: String, medicineId: String, details: String) async throws {
-        let history = HistoryEntry(medicineId: medicineId, user: user, action: action, details: details)
-        try await db.collection("history").document(history.id ?? UUID().uuidString)
-            .setData(history.dictionary)
+                //loop in the documents and delete each one
+                for document in documents.documents {
+                    try await db.collection(CollectionReference.history.rawValue)
+                        .document(document.documentID)
+                        .delete()
+                }
+            }
+        } catch {
+            throw MedistockError.deleteError(error.localizedDescription)
+        }
     }
 }

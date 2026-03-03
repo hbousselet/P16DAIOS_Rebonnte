@@ -2,45 +2,36 @@ import SwiftUI
 
 struct MedicineDetailView: View {
     @State var medicine: Medicine
-    @ObservedObject var viewModel = MedicineStockViewModel()
-    @EnvironmentObject var session: SessionStore
+    @State var viewModel: MedicineStockViewModel
+    @State var isCreatingNewStock: Bool = false
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Title
                 Text(medicine.name)
                     .font(.largeTitle)
                     .padding(.top, 20)
-
-                // Medicine Name
+                    .accessibilityAddTraits(.isHeader)
                 medicineNameSection
-
-                // Medicine Stock
+                    .accessibilityElement(children: .combine)
                 medicineStockSection
-
-                // Medicine Aisle
+                    .accessibilityElement(children: .combine)
                 medicineAisleSection
-
-                // History Section
-                historySection
+                    .accessibilityElement(children: .combine)
+                if isCreatingNewStock {
+                    createButton
+                        .padding(.horizontal)
+                } else {
+                    historySection
+                }
             }
             .padding(.vertical)
         }
-        .navigationBarTitle("Medicine Details", displayMode: .inline)
-        .onAppear {
-            Task {
-                await viewModel.fetchHistory(for: medicine)
-            }
-        }
-        .onChange(of: medicine) { _ in
-            Task {
-                await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
-            }
-        }
-        .onDisappear {
-            // on se désabonne
-        }
+        .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
+        .customAlert(presentAlert: $viewModel.presentAlertDetailsView, alertMessage: viewModel.alertDetailsView, removeAlert: {
+            viewModel.removeAlert()
+        })
     }
 }
 
@@ -50,11 +41,13 @@ extension MedicineDetailView {
             Text("Name")
                 .font(.headline)
             TextField("Name", text: $medicine.name)
-            onSubmit {
-                Task {
-                    await                 viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                .onSubmit {
+                    if !isCreatingNewStock {
+                        Task(priority: .userInitiated) {
+                            await viewModel.updateStock(by: 0, for: medicine)
+                        }
+                    }
                 }
-            }
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .padding(.bottom, 10)
         }
@@ -67,27 +60,35 @@ extension MedicineDetailView {
                 .font(.headline)
             HStack {
                 Button(action: {
-                    Task {
-                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: false)
+                    if !isCreatingNewStock {
+                        Task(priority: .userInitiated) {
+                            await viewModel.updateStock(by: -1, for: medicine)
+                        }
                     }
+                    medicine.stock -= 1
                 }) {
                     Image(systemName: "minus.circle")
                         .font(.title)
                         .foregroundColor(.red)
                 }
                 TextField("Stock", value: $medicine.stock, formatter: NumberFormatter())
-                onSubmit {
-                    Task {
-                        await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                    .onSubmit {
+                        if !isCreatingNewStock {
+                            Task(priority: .userInitiated) {
+                                await viewModel.updateStock(by: 0, for: medicine)
+                            }
+                        }
                     }
-                }
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .keyboardType(.numberPad)
-                .frame(width: 100)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .keyboardType(.numberPad)
+                    .frame(width: 100)
                 Button(action: {
-                    Task {
-                        await viewModel.updateStock(medicine, user: session.session?.uid ?? "", increase: true)
+                    if !isCreatingNewStock {
+                        Task(priority: .userInitiated) {
+                            await viewModel.updateStock(by: 1, for: medicine)
+                        }
                     }
+                    medicine.stock += 1
                 }) {
                     Image(systemName: "plus.circle")
                         .font(.title)
@@ -96,7 +97,10 @@ extension MedicineDetailView {
             }
             .padding(.bottom, 10)
         }
-        .padding(.horizontal)
+        .accessibilityRepresentation {
+            Stepper("\(medicine.stock) stocks", value: $medicine.stock, in: 0...10000, step: 1)
+                .padding(.horizontal)
+        }
     }
 
     private var medicineAisleSection: some View {
@@ -104,13 +108,15 @@ extension MedicineDetailView {
             Text("Aisle")
                 .font(.headline)
             TextField("Aisle", text: $medicine.aisle)
-            onSubmit {
-                Task {
-                    await viewModel.updateMedicine(medicine, user: session.session?.uid ?? "")
+                .onSubmit {
+                    if !isCreatingNewStock {
+                        Task(priority: .userInitiated) {
+                            await viewModel.updateStock(by: 0, for: medicine)
+                        }
+                    }
                 }
-            }
-            .textFieldStyle(RoundedBorderTextFieldStyle())
-            .padding(.bottom, 10)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.bottom, 10)
         }
         .padding(.horizontal)
     }
@@ -120,11 +126,14 @@ extension MedicineDetailView {
             Text("History")
                 .font(.headline)
                 .padding(.top, 20)
-            ForEach(viewModel.history.filter { $0.medicineId == medicine.id }, id: \.id) { entry in
+            ForEach(viewModel.history
+                .filter({ $0.medicineId == medicine.id })
+                .sorted(by: { $0.timestamp > $1.timestamp})
+                    , id: \.id) { entry in
                 VStack(alignment: .leading, spacing: 5) {
                     Text(entry.action)
                         .font(.headline)
-                    Text("User: \(entry.user)")
+                    Text("User: \(entry.userEmail)")
                         .font(.subheadline)
                     Text("Date: \(entry.timestamp.formatted())")
                         .font(.subheadline)
@@ -138,13 +147,33 @@ extension MedicineDetailView {
             }
         }
         .padding(.horizontal)
+        .onAppear {
+            Task(priority: .userInitiated) {
+                await viewModel.fetchHistory(for: medicine)
+            }
+        }
     }
-}
 
-struct MedicineDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        let sampleMedicine = Medicine(name: "Sample", stock: 10, aisle: "Aisle 1")
-        let sampleViewModel = MedicineStockViewModel()
-        MedicineDetailView(medicine: sampleMedicine, viewModel: sampleViewModel).environmentObject(SessionStore())
+    private var createButton: some View {
+        Button(action: {
+            Task(priority: .userInitiated) {
+                if medicine.userId == "" {
+                    guard let userId = (viewModel.user as? User)?.uid else { return }
+                    medicine.userId = userId
+                }
+                let hasCreated = await viewModel.createStock(for: medicine)
+                if hasCreated {
+                    isCreatingNewStock.toggle()
+                    dismiss()
+                }
+            }
+        }) {
+            Text("Create new stock")
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(10)
+        }
     }
 }

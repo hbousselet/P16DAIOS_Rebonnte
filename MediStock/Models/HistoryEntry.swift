@@ -4,15 +4,27 @@ import FirebaseFirestoreSwift
 struct HistoryEntry: Identifiable, Codable, ModelProtocol {
     @DocumentID var id: String?
     var medicineId: String
-    var user: String
+    var userId: String
+    var userEmail: String
     var action: String
     var details: String
     var timestamp: Date
 
-    init(id: String? = nil, medicineId: String, user: String, action: String, details: String, timestamp: Date = Date()) {
+    enum CodingKeys: String, CodingKey {
+        case medicineId = "medicine_id"
+        case userId = "user_id"
+        case userEmail = "user_email"
+        case action
+        case details
+        case timestamp
+        case id
+    }
+
+    init(id: String? = nil, medicineId: String, userId: String, userEmail: String, action: String, details: String, timestamp: Date = Date()) {
         self.id = id
         self.medicineId = medicineId
-        self.user = user
+        self.userId = userId
+        self.userEmail = userEmail
         self.action = action
         self.details = details
         self.timestamp = timestamp
@@ -20,7 +32,8 @@ struct HistoryEntry: Identifiable, Codable, ModelProtocol {
 
     var dictionary: [String: Any] {
         let dict = ["medicine_id": medicineId,
-                    "user": user,
+                    "user_id": userId,
+                    "user_email": userEmail,
                     "action": action,
                     "details": details,
                     "timestamp": timestamp

@@ -1,85 +1,231 @@
 import Foundation
 import Firebase
 
-class MedicineStockViewModel: ObservableObject {
-    @Published var medicines: [Medicine] = []
-    @Published var aisles: [String] = []
-    @Published var history: [HistoryEntry] = []
-    private var db = Firestore.firestore()
+@Observable class MedicineStockViewModel {
+    var medicines: [Medicine] = []
+    var aisles: [String] = []
+    var history: [HistoryEntry] = []
+    var showLoading: Bool = false
 
-    private var firestoreService: FirestoreService = FirestoreService()
+    var alertTabViews: String?
+    var presentAlertTabViews: Bool = false
+
+    var alertDetailsView: String?
+    var presentAlertDetailsView: Bool = false
+
+    var user: AuthUserProtocol?
+
+    private var firestoreService: FirestoreProtocol
+    private var medicineStreamTask: Task<Void, Never>?
+    private var historyStreamTask: Task<Void, Never>?
+
+    init(firestoreService: FirestoreProtocol = FirestoreService()) {
+        self.firestoreService = firestoreService
+    }
 
     @MainActor
     func fetchMedicines() async {
-        for await medicine: [Medicine] in firestoreService.stream(reference: .medicines) {
-            print("medicine received : \(medicine)")
-            medicines = medicine
-            aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+        medicineStreamTask?.cancel()
+
+        medicineStreamTask = Task {
+            showLoading = true
+            do {
+                for try await medicine: [Medicine] in await firestoreService.stream(reference: .medicines, element: nil) {
+                    guard !Task.isCancelled else { break }
+                    medicines = medicine
+                    aisles = Array(Set(medicines.map { $0.aisle })).sorted()
+                    showLoading = false
+                }
+            } catch {
+                showLoading = false
+                presentAlertTabViews = true
+                alertTabViews = (error as? MedistockError)?.errorDescription
+            }
         }
     }
 
+    @MainActor
     func fetchHistory(for medicine: Medicine) async {
-        guard let medicineId = medicine.id else { return }
-        for await historyEntry: [HistoryEntry] in firestoreService.stream(reference: .history, element: medicineId) {
-            history.append(contentsOf: historyEntry)
+        historyStreamTask?.cancel()
+
+        historyStreamTask = Task {
+            showLoading = true
+            do {
+                for try await historyEnt: [HistoryEntry] in await firestoreService.stream(reference: .history, element: medicine.id) {
+                    guard !Task.isCancelled else { break }
+                    history = historyEnt
+                    showLoading = false
+                }
+            } catch {
+                showLoading = false
+                presentAlertDetailsView = true
+                alertDetailsView = (error as? MedistockError)?.errorDescription
+            }
         }
     }
 
-    func removeHistoryListener() {
-
-    }
-
-    func addRandomMedicine(user: String) async {
-        let medicine = Medicine(name: "Medicine \(Int.random(in: 1...100))", stock: Int.random(in: 1...100), aisle: "Aisle \(Int.random(in: 1...10))")
-        do {
-            try db.collection("medicines").document(medicine.id ?? UUID().uuidString).setData(from: medicine)
-            try await firestoreService.addHistory(action: "Added \(medicine.name)", user: user, medicineId: medicine.id ?? "", details: "Added new medicine")
-        } catch let error {
-            print("Error adding document: \(error)")
-        }
-    }
-
-    func deleteMedicines(at offsets: IndexSet) async {
-//        offsets.map { medicines[$0] }.forEach { medicine in
-//            if let id = medicine.id {
-//                do {
-//                    try await firestoreService.delete(id: id)
-//                } catch {
-//                    
-//                }
-//
-//            }
-//        }
-    }
-
-    func updateStock(by value: Int, for medicine: Medicine, and user: String) async {
+    func updateStock(by value: Int, for medicine: Medicine) async {
         guard let id = medicine.id,
             let index = medicines.firstIndex(where: { $0.id == id }) else { return }
+        showLoading = true
         var updatedMedicine = medicine // keep the source of truth from the server
-        updatedMedicine.stock += value
-        do {
-            try? await firestoreService.update(model: updatedMedicine, reference: .medicines)
-            guard let newHistory = await prepareHistory(by: value, id: id, for: medicines[index], and: user) else { return }
-            try await firestoreService.update(model: newHistory, reference: .history)
-        } catch {
 
+        do {
+            try await firestoreService.update(model: updatedMedicine, reference: .medicines)
+            guard let newHistory = await prepareHistory(by: value == 0 ? medicine.stock : value, action: .operation, id: id, for: medicines[index]) else { return }
+            let _ = try await firestoreService.create(model: newHistory, reference: .history)
+            showLoading = false
+        } catch {
+            showLoading = false
+            presentAlertDetailsView = true
+            alertDetailsView = (error as? MedistockError)?.errorDescription
             }
     }
 
-    private func prepareHistory(by value: Int, id: String, for medicine: Medicine, and user: String) async -> HistoryEntry? {
-        return HistoryEntry(medicineId: id,
-                     user: user,
-                     action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
-                     details: "Stock changed from \(medicine.stock - value) to \(medicine.stock)")
-    }
+    private func prepareHistory(by value: Int? = nil,
+                                action: MedistockAction,
+                                id: String?,
+                                for medicine: Medicine) async -> HistoryEntry? {
+        switch action {
+        case .operation:
+            guard let value,
+                  let id,
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
+            let oldValue: Int = medicine.stock - value
 
-    func updateMedicine(_ medicine: Medicine, user: String) async {
-        guard let id = medicine.id else { return }
-        do {
-            try await firestoreService.updateMedicine(medicine, user: user)
-            try await firestoreService.addHistory(action: "Updated \(medicine.name)", user: user, medicineId: id, details: "Updated medicine details")
-        } catch let error {
-            print("Error updating document: \(error)")
+            return HistoryEntry(medicineId: id,
+                                userId: userUID,
+                                userEmail: email,
+                                action: "\(value > 0 ? "Increased" : "Decreased") stock of \(medicine.name) by \(value)",
+                                details: "Stock changed from \(oldValue) to \(medicine.stock)")
+        case .create:
+            guard let id,
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
+            return HistoryEntry(medicineId: id,
+                                userId: userUID,
+                                userEmail: email,
+                                action: "Created \(medicine.name)",
+                                details: "Create new medicine with quantity: \(medicine.stock)")
+        case .update:
+            guard let id,
+                  let userUID = user?.uid,
+                  let email = user?.email else { return nil }
+            return HistoryEntry(medicineId: id,
+                                userId: userUID,
+                                userEmail: email,
+                                action: "Updated \(medicine.name)",
+                                details: "Updated medicine details")
         }
     }
+
+    func createStock(for medicine: Medicine) async -> Bool {
+        if !medicine.aisle.containsANumber() {
+            prepareAlert(MedistockError.noNumberInAisleName)
+            return false
+        }
+        if medicine.name.isEmpty {
+            prepareAlert(MedistockError.emptyMedicineName)
+            return false
+        }
+        if medicine.stock == 0 {
+            prepareAlert(MedistockError.emptyStockMedicineCreation)
+            return false
+        }
+        if medicines.filter({$0.name == medicine.name && $0.aisle == medicine.aisle}).first != nil {
+            prepareAlert(MedistockError.alreadyExists)
+            return false
+        }
+        do {
+            showLoading = true
+            let medicineId = try await firestoreService.create(model: medicine, reference: .medicines)
+            guard let newHistory = await prepareHistory(action: .create, id: medicineId, for: medicine) else { return false }
+            let _ = try await firestoreService.create(model: newHistory, reference: .history)
+            showLoading = false
+            return true
+        } catch {
+            showLoading = false
+            presentAlertDetailsView = true
+            alertDetailsView = (error as? MedistockError)?.errorDescription
+            return false
+        }
+    }
+
+    func deleteMedicines(for index: IndexSet.Element, and aisle: String? = nil) async {
+        let id: String?
+        if let aisle {
+            let medicinesFromAisle = filterAisle(with: aisle)
+            guard let occurrence = medicines.firstIndex(where: { $0.id == medicinesFromAisle[index].id }) else { return }
+            id = medicines[occurrence].id
+        } else {
+            id = medicines[index].id
+        }
+        guard let id else { return }
+        do {
+            showLoading = true
+            try await firestoreService.delete(id: id, reference: .medicines)
+            showLoading = false
+        } catch {
+            showLoading = false
+            presentAlertTabViews = true
+            alertTabViews = (error as? MedistockError)?.errorDescription
+        }
+    }
+
+    func filterAisle(with aisle: String) -> [Medicine] {
+        return medicines.filter({$0.aisle == aisle})
+    }
+
+    private func prepareAlert(_ error: MedistockError) {
+        showLoading = false
+        presentAlertDetailsView = true
+        alertDetailsView = error.errorDescription
+    }
+
+    func removeAlert() {
+        presentAlertDetailsView = false
+        alertDetailsView = nil
+    }
+}
+
+extension MedicineStockViewModel {
+    func stopMedicineStream() {
+        medicineStreamTask?.cancel()
+        medicineStreamTask = nil
+    }
+
+    func stopHistoryStream() {
+        historyStreamTask?.cancel()
+        historyStreamTask = nil
+    }
+}
+
+extension MedicineStockViewModel {
+    func filterAndSortMedicines(filterText: String, sortOption: SortOption) -> [Medicine] {
+        var medicines = medicines
+
+        if !filterText.isEmpty {
+            medicines = medicines.filter { $0.name.lowercased().contains(filterText.lowercased()) }
+        }
+
+        switch sortOption {
+        case .name:
+            medicines.sort { $0.name.lowercased() < $1.name.lowercased() }
+        case .stock:
+            medicines.sort { $0.stock < $1.stock }
+        case .none:
+            break
+        }
+
+        return medicines
+    }
+}
+
+enum SortOption: String, CaseIterable, Identifiable {
+    case none
+    case name
+    case stock
+
+    var id: String { self.rawValue }
 }
