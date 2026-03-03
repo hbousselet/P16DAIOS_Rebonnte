@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AlertViewModifier: ViewModifier {
     @Binding var presentAlert: Bool
-    @State var alertMessage: String?
+    @Binding var alertMessage: String?
     var needSecondButton: Bool = false
     var removeAlert: (() -> Void)?
     var secondButtonAction: (() async -> Void)?
@@ -35,7 +35,7 @@ struct AlertViewModifier: ViewModifier {
 }
 
 extension View {
-    func customAlert(presentAlert: Binding<Bool>, alertMessage: String? = nil, needSecondButton: Bool = false, removeAlert: (() -> Void)? = nil, secondButtonAction: (() async -> Void)? = nil) -> some View {
+    func customAlert(presentAlert: Binding<Bool>, alertMessage: Binding<String?>, needSecondButton: Bool = false, removeAlert: (() -> Void)? = nil, secondButtonAction: (() async -> Void)? = nil) -> some View {
         modifier(AlertViewModifier(presentAlert: presentAlert, alertMessage: alertMessage, needSecondButton: needSecondButton, removeAlert: removeAlert, secondButtonAction: secondButtonAction))
     }
 }

@@ -29,7 +29,7 @@ struct MedicineDetailView: View {
             .padding(.vertical)
         }
         .navigationBarTitle(isCreatingNewStock ? "Add stock" : "Medicine Details", displayMode: .inline)
-        .customAlert(presentAlert: $viewModel.presentAlertDetailsView, alertMessage: viewModel.alertDetailsView, removeAlert: {
+        .customAlert(presentAlert: $viewModel.presentAlertDetailsView, alertMessage: $viewModel.alertDetailsView, removeAlert: {
             viewModel.removeAlert()
         })
     }
@@ -98,8 +98,20 @@ extension MedicineDetailView {
             .padding(.bottom, 10)
         }
         .accessibilityRepresentation {
-            Stepper("\(medicine.stock) stocks", value: $medicine.stock, in: 0...10000, step: 1)
-                .padding(.horizontal)
+            Stepper {
+                   Text("\(medicine.stock) stocks")
+               } onIncrement: {
+                   Task(priority: .userInitiated) {
+                       await viewModel.updateStock(by: 1, for: medicine)
+                   }
+                   medicine.stock += 1
+               } onDecrement: {
+                   Task(priority: .userInitiated) {
+                       await viewModel.updateStock(by: -1, for: medicine)
+                   }
+                   medicine.stock -= 1
+               }
+               .padding(.horizontal)
         }
     }
 

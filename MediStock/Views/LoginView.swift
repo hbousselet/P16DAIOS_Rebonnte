@@ -47,6 +47,6 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        .customAlert(presentAlert: $authViewModel.alertIsPresented, alertMessage: authViewModel.alert)
+        .customAlert(presentAlert: $authViewModel.alertIsPresented, alertMessage: $authViewModel.alert)
     }
 }

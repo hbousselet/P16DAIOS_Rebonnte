@@ -39,7 +39,7 @@ struct AisleListView: View {
                 MedicineDetailView(medicine: Medicine.createNewStock(for: viewModel.user as? User), viewModel: viewModel, isCreatingNewStock: true)
             }
             .customAlert(presentAlert: $viewModel.presentAlertTabViews,
-                         alertMessage: viewModel.alertTabViews,
+                         alertMessage: $viewModel.alertTabViews,
                          needSecondButton: true, secondButtonAction: {
                 Task(priority: .userInitiated) {
                     await viewModel.fetchMedicines()
